@@ -1,0 +1,16 @@
+{
+    "https": false,
+    "port": 80,
+    "timeout": 2104,
+    "api_sub_url": "api",
+
+    "paths": {
+        "methods": "./methods",
+        "static": {
+            "client": "./public/client",
+            "api": "./public/api"
+        }
+    },
+
+    "headers": []
+}
