@@ -1,0 +1,25 @@
+{
+    "use": true,
+    "method": "get",
+
+    "openapi": {
+        "summary": "Доступные значения фильтров",
+        "description": "Возвращает distinct-значения category/epoch/architecture_style по коллекции мест, а также диапазон avg_rating. Результат кэшируется в памяти на 10 минут.",
+        "tags": [ "places" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "categories": { "type": "array", "items": { "type": "string" } },
+                "epochs": { "type": "array", "items": { "type": "string" } },
+                "architecture_styles": { "type": "array", "items": { "type": "string" } },
+                "rating": {
+                    "type": "object",
+                    "properties": {
+                        "min": { "type": "number", "nullable": true },
+                        "max": { "type": "number", "nullable": true }
+                    }
+                }
+            }
+        }
+    }
+}

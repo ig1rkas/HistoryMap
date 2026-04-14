@@ -37,6 +37,7 @@ class Method extends Module {
         { code: -3, message: 'Метод отключен' },
         { code: -4, message: 'Требуется авторизация' },
         { code: -5, message: 'Недействительный или просроченный токен' },
+        { code: -6, message: 'Не найдено' },
     ];
     getError(code) { return this.#errors.find(error => error.code === code) }
     regError(code, message) {
@@ -92,7 +93,7 @@ class Method extends Module {
                             (param_config.orientation === 'positive' && value < 0 || param_config.orientation === 'negative' && value > 0)
                         ) value *= -1;
     
-                        if ('interval' in param_config && (param_config.interval[0] >= value || param_config.interval[1] <= value)) return key;
+                        if ('interval' in param_config && (param_config.interval[0] > value || param_config.interval[1] < value)) return key;
                     break;
     
                     case 'boolean':
@@ -109,8 +110,9 @@ class Method extends Module {
                 }
             } catch (e) { return key }
 
-            
-            if ('valid_values' in param_config && param_config.valid_values.indexOf(value) === -1) return key; 
+            if ('valid_values' in param_config && param_config.valid_values.indexOf(value) === -1) return key;
+
+            data[key] = value;
         }
 
         return true;

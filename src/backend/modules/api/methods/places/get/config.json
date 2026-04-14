@@ -1,0 +1,37 @@
+{
+    "use": true,
+    "method": "get",
+
+    "params": [
+        { "name": "id", "type": "objectId", "required": true, "description": "ObjectId достопримечательности" }
+    ],
+
+    "openapi": {
+        "summary": "Полная информация о достопримечательности",
+        "description": "Возвращает все поля места. В response поле coordinates нормализовано до массива [lon, lat], добавлено поле preview (ссылка на картинку превью).",
+        "tags": [ "places" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "place": {
+                    "type": "object",
+                    "properties": {
+                        "_id": { "type": "string" },
+                        "title": { "type": "string" },
+                        "short_description": { "type": "string" },
+                        "category": { "type": "string" },
+                        "epoch": { "type": "string" },
+                        "architecture_style": { "type": "string" },
+                        "coordinates": { "type": "array", "items": { "type": "number" } },
+                        "gallery": { "type": "array" },
+                        "information": { "type": "array" },
+                        "tags": { "type": "array" },
+                        "avg_rating": { "type": "number", "nullable": true },
+                        "rating_count": { "type": "integer" },
+                        "preview": { "type": "string", "nullable": true }
+                    }
+                }
+            }
+        }
+    }
+}

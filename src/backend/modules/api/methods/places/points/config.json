@@ -1,0 +1,40 @@
+{
+    "use": true,
+    "method": "get",
+
+    "params": [
+        { "name": "lat", "type": "number", "required": false, "interval": [-90, 90], "description": "Широта центра для геопоиска" },
+        { "name": "lon", "type": "number", "required": false, "interval": [-180, 180], "description": "Долгота центра для геопоиска" },
+        { "name": "radius", "type": "number", "required": false, "orientation": "positive", "description": "Радиус поиска в метрах (от центра lat/lon)" },
+        { "name": "category", "type": "string", "required": false },
+        { "name": "epoch", "type": "string", "required": false },
+        { "name": "architecture_style", "type": "string", "required": false },
+        { "name": "min_rating", "type": "number", "required": false, "interval": [0, 5], "description": "Минимальный средний рейтинг" }
+    ],
+
+    "openapi": {
+        "summary": "Точки на карте",
+        "description": "Возвращает минимальный набор полей по достопримечательностям для отображения пинов. Если переданы lat/lon/radius — используется 2dsphere-геопоиск вокруг указанной точки.",
+        "tags": [ "places" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "_id": { "type": "string" },
+                            "title": { "type": "string" },
+                            "category": { "type": "string" },
+                            "coordinates": { "type": "array", "items": { "type": "number" }, "description": "[lon, lat]" },
+                            "preview": { "type": "string", "nullable": true },
+                            "avg_rating": { "type": "number", "nullable": true },
+                            "distance": { "type": "number", "description": "Только при геопоиске — расстояние в метрах" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
