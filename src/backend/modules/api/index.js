@@ -5,9 +5,11 @@ const https = require('https');
 const express = require('express');
 const body_parser = require('body-parser');
 const cors = require('cors');
+const swagger_ui = require('swagger-ui-express');
 
 const Module = require('../_class');
 const directorySearch = require('../../functions/directorySearch');
+const { buildOpenApiSpec } = require('./openapi');
 
 const modules = require('../../modules');
 
@@ -90,6 +92,26 @@ class API extends Module {
         );
     }
 
+    #initSwagger() {
+        const config = this.getConfig();
+        const methodsDir = path.join(this.getDirname(), config.paths.methods);
+
+        const spec = buildOpenApiSpec({
+            methodsDir,
+            apiSubUrl: config.api_sub_url
+        });
+
+        const docs_path = '/' + config.api_sub_url + '/docs';
+        const spec_path = '/' + config.api_sub_url + '/openapi.json';
+
+        this.#express.get(spec_path, (req, res) => res.json(spec));
+        this.#express.use(docs_path, swagger_ui.serve, swagger_ui.setup(spec, {
+            customSiteTitle: 'HistoryMap API'
+        }));
+
+        modules.logger.info(`Swagger UI: ${docs_path} | OpenAPI JSON: ${spec_path}`);
+    }
+
     #initErrorHandler() {
         // Глобальный перехват ошибок Express (регистрируется после всех роутов)
         this.#express.use((err, req, res, next) => {
@@ -106,6 +128,7 @@ class API extends Module {
     async startFunction() {
         this.#initExpress();
         this.#initMethod();
+        this.#initSwagger();
         this.#initErrorHandler();
 
         const mode_https = this.getConfig().https;
