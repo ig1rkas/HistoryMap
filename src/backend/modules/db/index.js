@@ -49,12 +49,21 @@ class DB extends Module {
         for (let i = 0; i < files.length; i++) {
             if (files[i][0] === '_') continue;
 
-            const schema = require(path.join(path_models, files[i]));
-            if (schema instanceof Object) {
-                const split = files[i].split('.');
-                const name = split.slice(0, split.length - 1).join('.');
-                this.models[name] = this.mongoose.model(name, Schema(...schema));
+            const exported = require(path.join(path_models, files[i]));
+            if (!(exported instanceof Array)) continue;
+
+            const [ definition, options, indexes ] = exported;
+            const split = files[i].split('.');
+            const name = split.slice(0, split.length - 1).join('.');
+
+            const schema = Schema(definition, options);
+            if (indexes instanceof Array) {
+                for (const index_def of indexes) {
+                    if (index_def instanceof Array) schema.index(index_def[0], index_def[1]);
+                    else schema.index(index_def);
+                }
             }
+            this.models[name] = this.mongoose.model(name, schema);
         }
     }
 

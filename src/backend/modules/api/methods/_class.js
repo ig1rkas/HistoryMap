@@ -3,6 +3,7 @@ const API = require('../index');
 
 const modules = require('../../../modules');
 const { default: mongoose } = require('mongoose');
+const jwtUtil = require('../../../utils/jwt');
 
 class Method extends Module {
     loadConfig(config_path) {
@@ -34,6 +35,8 @@ class Method extends Module {
         { code: -1, message: 'Ошибка во время выполнения запроса' },
         { code: -2, message: 'Ошибка во время проверки параметров запроса' },
         { code: -3, message: 'Метод отключен' },
+        { code: -4, message: 'Требуется авторизация' },
+        { code: -5, message: 'Недействительный или просроченный токен' },
     ];
     getError(code) { return this.#errors.find(error => error.code === code) }
     regError(code, message) {
@@ -147,8 +150,20 @@ class Method extends Module {
             let done = config.use;
             if (!done) return this.sendResponse(res, this.getError(-3), 500);
 
-            if ('auth' in config) {
-                // Проверка авторизации пользователя
+            if ('auth' in config && config.auth !== false) {
+                const header = req.headers['authorization'] || req.headers['Authorization'];
+                const token = header && /^bearer\s+/i.test(header) ? header.replace(/^bearer\s+/i, '').trim() : null;
+
+                if (!token) {
+                    if (config.auth === 'optional') req.user = null;
+                    else return this.sendResponse(res, this.getError(-4), 401);
+                } else {
+                    try { req.user = jwtUtil.verify(token, 'access') }
+                    catch (e) {
+                        if (config.auth === 'optional') req.user = null;
+                        else return this.sendResponse(res, this.getError(-5), 401);
+                    }
+                }
             }
 
             if (config.have_params) done = this.checkParams(req.container_data);
