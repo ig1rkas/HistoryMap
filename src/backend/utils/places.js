@@ -21,4 +21,28 @@ function buildFilter({ category, epoch, architecture_style, min_rating } = {}) {
     return filter;
 }
 
-module.exports = { extractPreview, buildFilter };
+/**
+ * Пересчитывает avg_rating и rating_count у места на основе approved-отзывов.
+ * Обновляет документ в places и возвращает итоговые значения.
+ * @param {import('mongoose').Model} Place
+ * @param {import('mongoose').Model} Review
+ * @param {*} place_id
+ */
+async function recalcRating(Place, Review, place_id) {
+    const agg = await Review.aggregate([
+        { $match: { place_id: toObjectId(place_id), moderation_status: 'approved' } },
+        { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]);
+    const avg_rating = agg.length > 0 ? agg[0].avg : null;
+    const rating_count = agg.length > 0 ? agg[0].count : 0;
+    await Place.findByIdAndUpdate(place_id, { avg_rating, rating_count });
+    return { avg_rating, rating_count };
+}
+
+function toObjectId(id) {
+    if (id && typeof id === 'object' && id._bsontype === 'ObjectId') return id;
+    const mongoose = require('mongoose');
+    return new mongoose.Types.ObjectId(String(id));
+}
+
+module.exports = { extractPreview, buildFilter, recalcRating };

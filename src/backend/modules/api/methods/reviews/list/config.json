@@ -1,0 +1,25 @@
+{
+    "use": true,
+    "method": "get",
+
+    "params": [
+        { "name": "place_id", "type": "objectId", "required": true, "description": "ObjectId достопримечательности" },
+        { "name": "limit", "type": "number", "required": false, "interval": [1, 100] },
+        { "name": "offset", "type": "number", "required": false, "orientation": "positive" }
+    ],
+
+    "openapi": {
+        "summary": "Список отзывов по месту",
+        "description": "Только approved-отзывы, сортировка по created_at desc, пагинация через limit/offset.",
+        "tags": [ "reviews" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "reviews": { "type": "array", "items": { "type": "object" } },
+                "total": { "type": "integer" },
+                "limit": { "type": "integer" },
+                "offset": { "type": "integer" }
+            }
+        }
+    }
+}

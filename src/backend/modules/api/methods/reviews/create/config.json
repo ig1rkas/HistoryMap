@@ -1,0 +1,38 @@
+{
+    "use": true,
+    "method": "post",
+    "auth": true,
+
+    "params": [
+        { "name": "place_id", "type": "objectId", "required": true, "description": "ObjectId достопримечательности" },
+        { "name": "rating", "type": "number", "required": true, "interval": [1, 5], "description": "Оценка от 1 до 5" },
+        { "name": "text", "type": "string", "required": false, "description": "Необязательный текст отзыва" }
+    ],
+
+    "openapi": {
+        "summary": "Создание отзыва",
+        "description": "Требует авторизации. Текст проходит blacklist-модерацию: при срабатывании статус reviews.moderation_status = 'rejected' (отзыв сохраняется, но не учитывается в avg_rating). При approved пересчитываются avg_rating и rating_count у места, инвалидируется кэш /api/places/filters.",
+        "tags": [ "reviews" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "review": { "type": "object" },
+                "moderation": {
+                    "type": "object",
+                    "properties": {
+                        "status": { "type": "string", "enum": [ "approved", "rejected" ] },
+                        "matched": { "type": "string", "nullable": true }
+                    }
+                },
+                "place_stats": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                        "avg_rating": { "type": "number", "nullable": true },
+                        "rating_count": { "type": "integer" }
+                    }
+                }
+            }
+        }
+    }
+}
