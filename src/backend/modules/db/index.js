@@ -15,9 +15,10 @@ class DB extends Module {
         this.mongoose = require('mongoose');
         this.models = {};
 
-        try { await this.mongoose.connect(this.getConfig().url) }
+        const url = process.env.MONGO_URL || this.getConfig().url;
+        try { await this.mongoose.connect(url) }
         catch (e) {
-            modules.logger.error(modules.logger.stringError(e));
+            modules.logger.error(modules.logger.stringError(e, false));
             throw new Error('Ошибка при подключении к базе данных');
         }
         modules.logger.info('База данных подключена');

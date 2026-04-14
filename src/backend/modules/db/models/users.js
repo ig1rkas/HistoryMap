@@ -8,22 +8,29 @@ module.exports = [
             unique: true,
             required: true
         },
-        access_token: {
-            ...createTypesValidator([ 'string' ], true),
-            required: true
-        },
-        access_token: {
+
+        vk_access_token: {
             type: String,
             required: true
         },
-        expires: {
+        vk_access_token_expires: {
             ...createTypesValidator([ Date ], true),
             required: true
+        },
+
+        refresh_token: {
+            ...createTypesValidator([ 'string' ], true),
+            default: null
+        },
+        refresh_token_expires: {
+            ...createTypesValidator([ Date ], true),
+            default: null
         }
     },
 
     // Настройки
     {
-        versionKey: false
+        versionKey: false,
+        timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
     }
 ]

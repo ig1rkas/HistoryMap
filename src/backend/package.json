@@ -1,16 +1,22 @@
 {
-    "name": "History Map Backend",
+    "name": "history-map-backend",
     "version": "1.0.0",
-    "description": "",
+    "description": "Backend for HistoryMap — карта достопримечательностей Санкт-Петербурга",
     "main": "index.js",
     "scripts": {
-        "test": "node index.js"
+        "start": "node index.js",
+        "dev": "nodemon index.js"
     },
     "author": "Stanevko Ilya",
     "license": "ISC",
     "dependencies": {
         "body-parser": "^1.20.2",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
         "express": "^4.18.2",
         "mongoose": "^8.0.3"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.0"
     }
 }

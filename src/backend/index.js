@@ -1,3 +1,4 @@
+require('dotenv').config();
 require('./customize');
 
 const fs = require('fs');
@@ -13,7 +14,7 @@ const priority_launch_queue = [ 'logger', 'db' ];
 const launch_queue = Object.keys(modules).sort((module1, module2) => {
     const index_module1 = priority_launch_queue.indexOf(module1);
     const index_module2 = priority_launch_queue.indexOf(module2);
-    
+
     if (index_module1 !== -1 && index_module2 !== -1) return index_module1-index_module2;
     return index_module1 !== -1 ? -1 : 1;
 });
@@ -26,7 +27,7 @@ async function launch(index) {
     try { await modules[module].start() }
     catch (e) {
         error = e.message;
-        modules.logger.error(modules.logger.stringError(e));
+        modules.logger.error(modules.logger.stringError(e, false));
     }
 
     if (error) {
@@ -42,7 +43,7 @@ async function launch(index) {
         }
 
         const status = modules[module].getStatus();
-        
+
         switch (status) {
             case 'off':
                 modules.logger.warn(`Модуль ${module} не запущен`);
@@ -76,6 +77,30 @@ for (let i = 0; i < process.argv.length; i += 2) {
 // Подключение глобального конфига (при наличии)
 if (fs.existsSync(path.join(__dirname, './config.json')))
     process.globalConfig = require('./config.json');
+
+// Graceful shutdown: останавливаем модули в обратном порядке приоритета
+let is_shutting_down = false;
+async function shutdown(signal) {
+    if (is_shutting_down) return;
+    is_shutting_down = true;
+
+    try { modules.logger.info(`Получен сигнал ${signal}, останавливаю модули...`) }
+    catch (_) { console.log(`[shutdown] Получен сигнал ${signal}`) }
+
+    const stop_queue = [...launch_queue].reverse();
+    for (const name of stop_queue) {
+        if (modules[name].getStatus() !== 'on') continue;
+        try { await modules[name].stop() }
+        catch (e) {
+            try { modules.logger.error(`Ошибка при остановке модуля ${name}: ${modules.logger.stringError(e, false)}`) }
+            catch (_) { console.error(`[shutdown] Ошибка при остановке модуля ${name}:`, e) }
+        }
+    }
+
+    process.exit(0);
+}
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 async function run() {
     await delay(1000);

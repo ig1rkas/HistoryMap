@@ -4,6 +4,7 @@ const http = require('http');
 const https = require('https');
 const express = require('express');
 const body_parser = require('body-parser');
+const cors = require('cors');
 
 const Module = require('../_class');
 const directorySearch = require('../../functions/directorySearch');
@@ -15,7 +16,7 @@ class API extends Module {
     getConfig() { return super.getConfig() }
 
     /**
-     * 
+     *
      * @param {*} res res
      * @param {Object|String} data Ответ, который необхоимо вывести
      * @param {Number} code Код ответа
@@ -27,27 +28,35 @@ class API extends Module {
     #options;
     getOptions() { return this.#options }
     loadOptions() {
-        // TODO: Настроить доступ к SSL после установки сертификата 
+        // TODO: Настроить доступ к SSL после установки сертификата
         try {
             const SSL_PATH = path.join(this.getDirname(), '');
             this.#options = {
-                key: fs.readFileSync(path.join(SSL_PATH, '')), 
+                key: fs.readFileSync(path.join(SSL_PATH, '')),
                 cert: fs.readFileSync(path.join(SSL_PATH, ''))
             }
         } catch (e) {
             modules.logger.warn(e.message);
         }
     }
-    
+
     /** @type {express.Express} */
     #express;
     #initExpress() {
         const config = this.getConfig();
 
         this.#express = express();
+
+        // CORS
+        const cors_origin = process.env.CORS_ORIGIN || '*';
+        this.#express.use(cors({
+            origin: cors_origin === '*' ? true : cors_origin.split(',').map(s => s.trim()),
+            credentials: cors_origin !== '*'
+        }));
+
         this.#express.use('/', express.static(path.join(this.getDirname(), config.paths.static.client)));
         this.#express.use('/' + config.api_sub_url, express.static(path.join(this.getDirname(), config.paths.static.api)));
-        
+
         const headers = config.headers;
         if (headers instanceof Array && headers.length > 0)
             this.#express.use((req, res, next) => {
@@ -68,7 +77,7 @@ class API extends Module {
 
         //Дополнительные обработчики
     }
-    
+
     #initMethod() {
         directorySearch(
             path.join(this.getDirname(), this.getConfig().paths.methods),
@@ -81,29 +90,40 @@ class API extends Module {
         );
     }
 
+    #initErrorHandler() {
+        // Глобальный перехват ошибок Express (регистрируется после всех роутов)
+        this.#express.use((err, req, res, next) => {
+            try { modules.logger.error(`Необработанная ошибка на ${req.method} ${req.url}: ${modules.logger.stringError(err, false)}`) }
+            catch (_) { console.error('[api]', err); }
+            if (res.headersSent) return next(err);
+            API.send(res, { code: -1, message: 'Внутренняя ошибка сервера' }, 500);
+        });
+    }
+
     /** @type {http.Server|https.Server} */
     #server;
 
     async startFunction() {
         this.#initExpress();
         this.#initMethod();
+        this.#initErrorHandler();
 
         const mode_https = this.getConfig().https;
 
         if (!this.getOptions() && mode_https) this.loadOptions();
         const options = this.getOptions();
-        
+
         this.#server = (mode_https ? https : http).createServer(options ? options : {}, this.#express);
-        
+
         await new Promise((res) => {
-            const port = this.getConfig().port;
+            const port = Number(process.env.PORT) || this.getConfig().port;
             this.#server.listen(port, () => {
                 modules.logger.info(`${mode_https ? 'HTTPS' : 'HTTP'} сервер запрущен, порт: ${port}`);
                 res(true);
             })
         });
     }
-    
+
     async stopFunction() {
         await new Promise((res) =>
             this.#server.close(() => {
