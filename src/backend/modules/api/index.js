@@ -44,6 +44,8 @@ class API extends Module {
 
     /** @type {express.Express} */
     #express;
+    /** Используется тестами, чтобы дёргать роуты через supertest без прослушивания порта */
+    getExpress() { return this.#express }
     #initExpress() {
         const config = this.getConfig();
 
