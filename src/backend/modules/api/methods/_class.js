@@ -170,7 +170,14 @@ class Method extends Module {
             if (done !== true) return this.sendResponse(res, { ...this.getError(-2), param_name: done }, 400);
             
             try { response = await this.getResponse(req, res) }
-            catch (e) { done = false }
+            catch (e) {
+                done = false;
+                try { modules.logger.error(`Ошибка в ${this.getUrl()}: ${modules.logger.stringError(e, false)}`) }
+                catch (_) {}
+            }
+
+            // Метод мог сам отправить ответ (например, res.redirect) — тогда не трогаем.
+            if (res.headersSent) return;
 
             if (!done) return this.sendResponse(res, this.getError(-1), 500);
             

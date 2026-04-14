@@ -15,8 +15,11 @@ class Logger extends Module {
 
     /** @param {boolean|'never'} [throwError=false]  */
     stringError(e, throwError=true) {
-        if ((process.argvParsed.throwErrors || throwError) && throwError !== 'never') throw e;
-        return (e).toString() === '[object Object]' ? JSON.stringify(e, null, 4) : e;
+        const argv = process.argvParsed || {};
+        if ((argv.throwErrors || throwError) && throwError !== 'never') throw e;
+        if (e instanceof Error) return e.stack || e.message || String(e);
+        const s = String(e);
+        return s === '[object Object]' ? JSON.stringify(e, null, 4) : s;
     }
 
     /**

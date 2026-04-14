@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { randomUUID } = require('node:crypto');
 
 function secret(kind) {
     const key = kind === 'refresh' ? process.env.JWT_REFRESH_SECRET : process.env.JWT_ACCESS_SECRET;
@@ -16,7 +17,7 @@ function ttl(kind) {
  * @param {'access'|'refresh'} kind
  */
 function sign(payload, kind = 'access') {
-    return jwt.sign(payload, secret(kind), { expiresIn: ttl(kind) });
+    return jwt.sign({ ...payload, jti: randomUUID() }, secret(kind), { expiresIn: ttl(kind) });
 }
 
 /**
