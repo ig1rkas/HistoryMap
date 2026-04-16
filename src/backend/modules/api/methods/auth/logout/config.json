@@ -1,0 +1,15 @@
+{
+    "use": true,
+    "method": "post",
+    "auth": true,
+
+    "openapi": {
+        "summary": "Выход (инвалидация refresh)",
+        "description": "Обнуляет сохранённый в БД refresh_token текущего пользователя. Access-токен продолжит работать до истечения TTL — клиент должен его забыть самостоятельно.",
+        "tags": [ "auth" ],
+        "response_schema": {
+            "type": "object",
+            "properties": { "ok": { "type": "boolean" } }
+        }
+    }
+}

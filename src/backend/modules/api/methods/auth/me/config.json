@@ -1,0 +1,25 @@
+{
+    "use": true,
+    "method": "get",
+    "auth": true,
+
+    "openapi": {
+        "summary": "Текущий пользователь",
+        "description": "Возвращает профиль текущего пользователя. Требует заголовок Authorization: Bearer <access_token>.",
+        "tags": [ "auth" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "type": "object",
+                    "properties": {
+                        "_id": { "type": "string" },
+                        "vk_id": { "type": "number" },
+                        "created_at": { "type": "string" },
+                        "updated_at": { "type": "string" }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "use": true,
+    "method": "get",
+
+    "openapi": {
+        "summary": "Пинг",
+        "description": "Проверка доступности API. Возвращает `{ ok: true }`.",
+        "tags": [ "system" ],
+        "response_schema": {
+            "type": "object",
+            "properties": { "ok": { "type": "boolean" } }
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "use": true,
+    "method": "post",
+
+    "params": [
+        { "name": "refresh_token", "type": "string", "required": true, "description": "Refresh JWT, выпущенный методом /api/auth/vk или /api/auth/refresh" }
+    ],
+
+    "openapi": {
+        "summary": "Обновление пары JWT",
+        "description": "Принимает refresh_token, проверяет подпись и сопоставление с сохранённым в БД значением. Выпускает новую пару access+refresh (старый refresh становится невалидным).",
+        "tags": [ "auth" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "access_token": { "type": "string" },
+                "refresh_token": { "type": "string" }
+            }
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "use": true,
+    "method": "get",
+
+    "openapi": {
+        "summary": "Количество достопримечательностей",
+        "description": "Возвращает общее число мест в БД. Результат кэшируется в памяти на 10 минут — используется для мотивирующего текста на лендинге.",
+        "tags": [ "places" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "count": { "type": "integer" }
+            }
+        }
+    }
+}

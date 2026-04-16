@@ -1,0 +1,31 @@
+{
+    "use": true,
+    "method": "get",
+
+    "params": [
+        { "name": "limit", "type": "number", "required": false, "interval": [1, 100], "description": "Размер страницы" },
+        { "name": "offset", "type": "number", "required": false, "orientation": "positive", "description": "Смещение страницы" },
+        { "name": "lat", "type": "number", "required": false, "interval": [-90, 90] },
+        { "name": "lon", "type": "number", "required": false, "interval": [-180, 180] },
+        { "name": "radius", "type": "number", "required": false, "orientation": "positive" },
+        { "name": "category", "type": "string", "required": false },
+        { "name": "epoch", "type": "string", "required": false },
+        { "name": "architecture_style", "type": "string", "required": false },
+        { "name": "min_rating", "type": "number", "required": false, "interval": [0, 5] }
+    ],
+
+    "openapi": {
+        "summary": "Список карточек достопримечательностей",
+        "description": "Возвращает карточки с пагинацией и теми же фильтрами, что и /api/places/points. Поддерживает гео-фильтр радиусом.",
+        "tags": [ "places" ],
+        "response_schema": {
+            "type": "object",
+            "properties": {
+                "cards": { "type": "array", "items": { "type": "object" } },
+                "total": { "type": "integer" },
+                "limit": { "type": "integer" },
+                "offset": { "type": "integer" }
+            }
+        }
+    }
+}

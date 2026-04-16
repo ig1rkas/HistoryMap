@@ -1,0 +1,18 @@
+{
+    "use": true,
+    "method": "get",
+
+    "openapi": {
+        "summary": "VK ID — авторизация и callback",
+        "description": "Без ?code редиректит пользователя на страницу авторизации VK. При возврате с ?code обменивает его на VK access_token, создаёт/обновляет пользователя, выпускает нашу пару JWT и делает 302 на FRONTEND_URL с `#access_token=...&refresh_token=...&user_id=...` в hash.",
+        "tags": [ "auth" ],
+        "responses": {
+            "302": {
+                "description": "Redirect на VK authorize или на FRONTEND_URL с JWT-токенами в hash",
+                "headers": {
+                    "Location": { "schema": { "type": "string" } }
+                }
+            }
+        }
+    }
+}
