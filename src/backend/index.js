@@ -85,7 +85,7 @@ async function shutdown(signal) {
     is_shutting_down = true;
 
     try { modules.logger.info(`Получен сигнал ${signal}, останавливаю модули...`) }
-    catch (_) { console.log(`[shutdown] Получен сигнал ${signal}`) }
+    catch { console.log(`[shutdown] Получен сигнал ${signal}`) }
 
     const stop_queue = [...launch_queue].reverse();
     for (const name of stop_queue) {
@@ -93,7 +93,7 @@ async function shutdown(signal) {
         try { await modules[name].stop() }
         catch (e) {
             try { modules.logger.error(`Ошибка при остановке модуля ${name}: ${modules.logger.stringError(e, false)}`) }
-            catch (_) { console.error(`[shutdown] Ошибка при остановке модуля ${name}:`, e) }
+            catch { console.error(`[shutdown] Ошибка при остановке модуля ${name}:`, e) }
         }
     }
 

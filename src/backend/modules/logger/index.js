@@ -53,7 +53,7 @@ class Logger extends Module {
         if (!exists_file && create) {
             created = true;
             try { fs.writeFileSync(path_to_file, '[INFO]Файл логирования инициализирован\n', { flag: 'w+' }) }
-            catch (e) { created = false }
+            catch { created = false }
         }
 
         
@@ -93,7 +93,7 @@ class Logger extends Module {
                 .replace('%text%', text)
         );
 
-        console.log(...print?.map(e => e.slice(-1) === '\n' ? e.slice(0, e.length-1) : e)); // Копирование логов в консоль
+        if (print) console.log(...print.map(e => e.slice(-1) === '\n' ? e.slice(0, e.length-1) : e)); // Копирование логов в консоль
         fs.writeFileSync(checked.path_to_file, print.join('\n'), { flag: 'a' });
 
         return true;

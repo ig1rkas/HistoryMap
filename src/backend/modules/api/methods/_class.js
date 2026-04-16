@@ -51,7 +51,7 @@ class Method extends Module {
      * @param {Object} res Ответ пользователю
      * @returns {*} Ответ вызова метода
      */
-    async getResponse(req, res) { return true }
+    async getResponse(_req, _res) { return true }
 
     checkParams(data) {
         const config = this.getConfig();
@@ -108,7 +108,7 @@ class Method extends Module {
                         value = new mongoose.Types.ObjectId(value);
                     break;
                 }
-            } catch (e) { return key }
+            } catch { return key }
 
             if ('valid_values' in param_config && param_config.valid_values.indexOf(value) === -1) return key;
 
@@ -161,7 +161,7 @@ class Method extends Module {
                     else return this.sendResponse(res, this.getError(-4), 401);
                 } else {
                     try { req.user = jwtUtil.verify(token, 'access') }
-                    catch (e) {
+                    catch {
                         if (config.auth === 'optional') req.user = null;
                         else return this.sendResponse(res, this.getError(-5), 401);
                     }
@@ -175,7 +175,7 @@ class Method extends Module {
             catch (e) {
                 done = false;
                 try { modules.logger.error(`Ошибка в ${this.getUrl()}: ${modules.logger.stringError(e, false)}`) }
-                catch (_) {}
+                catch {}
             }
 
             // Метод мог сам отправить ответ (например, res.redirect) — тогда не трогаем.

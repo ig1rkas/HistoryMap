@@ -13,7 +13,7 @@ class AuthRefresh extends Method {
 
         let payload;
         try { payload = jwtUtil.verify(refresh_token, 'refresh') }
-        catch (e) { return { error_code: -5, status: 401 } }
+        catch { return { error_code: -5, status: 401 } }
 
         const user = await modules.db.req('users', 'findById', [ payload.user_id ]);
         if (!user || user.refresh_token !== refresh_token) return { error_code: -5, status: 401 };

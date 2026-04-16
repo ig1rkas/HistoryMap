@@ -128,7 +128,7 @@ function collectPaths(methodsDir, apiSubUrl) {
 
         let methodConfig;
         try { methodConfig = JSON.parse(fs.readFileSync(configPath, 'utf8')) }
-        catch (e) { return }
+        catch { return }
 
         if (methodConfig.use === false) return;
 

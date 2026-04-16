@@ -20,7 +20,7 @@ class Module {
         let config;
 
         try { config = require(path.join(this.#__dirname, config_path)) }
-        catch (e) { done = false }
+        catch { done = false }
 
         if (done) {
             if (format instanceof Function) config = format(config);

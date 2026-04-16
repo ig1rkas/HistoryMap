@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { Model, Schema } = require('mongoose');
+const { Schema } = require('mongoose');
 
 const Module = require('../_class');
 const modules = require('../../modules');

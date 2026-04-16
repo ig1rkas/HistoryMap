@@ -88,7 +88,7 @@ class API extends Module {
             file_path => {
                 const splited = file_path.replace(/\\/g, '/').split('/');
                 /** @type {import('./methods/_class')} */
-                const method = new (require(file_path))('/' + this.getConfig().api_sub_url + '/' + splited.slice(splited.findIndex(e => e === this.getConfig().paths.methods.split('/').reverse()[0]) + 1, splited.length - 1).join('/'), this.#express);
+                new (require(file_path))('/' + this.getConfig().api_sub_url + '/' + splited.slice(splited.findIndex(e => e === this.getConfig().paths.methods.split('/').reverse()[0]) + 1, splited.length - 1).join('/'), this.#express);
             },
             'index.js'
         );
@@ -118,7 +118,7 @@ class API extends Module {
         // Глобальный перехват ошибок Express (регистрируется после всех роутов)
         this.#express.use((err, req, res, next) => {
             try { modules.logger.error(`Необработанная ошибка на ${req.method} ${req.url}: ${modules.logger.stringError(err, false)}`) }
-            catch (_) { console.error('[api]', err); }
+            catch { console.error('[api]', err); }
             if (res.headersSent) return next(err);
             API.send(res, { code: -1, message: 'Внутренняя ошибка сервера' }, 500);
         });

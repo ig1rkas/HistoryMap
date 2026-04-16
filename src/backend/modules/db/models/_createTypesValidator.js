@@ -9,7 +9,7 @@ function createTypesValidator(types, canBeNull=false) {
                 if (done) return true;
                 return types.find(type => {
                     try { val instanceof type }
-                    catch (e) {  }
+                    catch {  }
                 });
             },
             message: `Значение должно быть${canBeNull ? ' null' : ''} или одним из типов: ${types.join(',')}`
