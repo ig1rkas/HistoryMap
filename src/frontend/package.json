@@ -1,0 +1,11 @@
+{
+    "name": "history-map-frontend",
+    "version": "1.0.0",
+    "description": "Frontend for HistoryMap",
+    "scripts": {
+        "test": "echo \"Frontend tests not configured yet\" && exit 0",
+        "test:run": "echo \"Frontend tests not configured yet\" && exit 0"
+    },
+    "author": "Stanevko Ilya",
+    "license": "ISC"
+}
