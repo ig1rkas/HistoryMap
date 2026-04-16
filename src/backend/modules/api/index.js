@@ -140,9 +140,11 @@ class API extends Module {
 
         this.#server = (mode_https ? https : http).createServer(options ? options : {}, this.#express);
 
-        await new Promise((res) => {
-            const port = Number(process.env.PORT) || this.getConfig().port;
+        await new Promise((res, rej) => {
+            const port = 'PORT' in process.env ? Number(process.env.PORT) : this.getConfig().port;
+            this.#server.once('error', rej);
             this.#server.listen(port, () => {
+                this.#server.removeListener('error', rej);
                 modules.logger.info(`${mode_https ? 'HTTPS' : 'HTTP'} сервер запрущен, порт: ${port}`);
                 res(true);
             })
