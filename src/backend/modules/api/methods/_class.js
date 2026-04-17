@@ -153,17 +153,48 @@ class Method extends Module {
             if (!done) return this.sendResponse(res, this.getError(-3), 500);
 
             if ('auth' in config && config.auth !== false) {
-                const header = req.headers['authorization'] || req.headers['Authorization'];
-                const token = header && /^bearer\s+/i.test(header) ? header.replace(/^bearer\s+/i, '').trim() : null;
+                const test_mode = process.env.TEST_MODE === 'true';
+                const test_user_header = test_mode ? req.headers['x-test-user-id'] : null;
 
-                if (!token) {
-                    if (config.auth === 'optional') req.user = null;
-                    else return this.sendResponse(res, this.getError(-4), 401);
-                } else {
-                    try { req.user = jwtUtil.verify(token, 'access') }
-                    catch {
+                if (test_user_header !== null && test_user_header !== undefined && test_user_header !== '') {
+                    const vk_id = Number(test_user_header);
+                    if (!Number.isFinite(vk_id)) {
                         if (config.auth === 'optional') req.user = null;
                         else return this.sendResponse(res, this.getError(-5), 401);
+                    } else {
+                        try {
+                            const user = await modules.db.req('users', 'findOneAndUpdate', [
+                                { vk_id },
+                                {
+                                    $setOnInsert: {
+                                        vk_id,
+                                        vk_access_token: 'test-mode',
+                                        vk_access_token_expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                                    }
+                                },
+                                { upsert: true, new: true, setDefaultsOnInsert: true }
+                            ]);
+                            req.user = { user_id: user._id, vk_id };
+                        } catch (e) {
+                            try { modules.logger.error(`TEST_MODE auth upsert failed: ${modules.logger.stringError(e, false)}`) }
+                            catch {}
+                            if (config.auth === 'optional') req.user = null;
+                            else return this.sendResponse(res, this.getError(-1), 500);
+                        }
+                    }
+                } else {
+                    const header = req.headers['authorization'] || req.headers['Authorization'];
+                    const token = header && /^bearer\s+/i.test(header) ? header.replace(/^bearer\s+/i, '').trim() : null;
+
+                    if (!token) {
+                        if (config.auth === 'optional') req.user = null;
+                        else return this.sendResponse(res, this.getError(-4), 401);
+                    } else {
+                        try { req.user = jwtUtil.verify(token, 'access') }
+                        catch {
+                            if (config.auth === 'optional') req.user = null;
+                            else return this.sendResponse(res, this.getError(-5), 401);
+                        }
                     }
                 }
             }

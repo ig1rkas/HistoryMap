@@ -24,6 +24,11 @@
 | `VK_REDIRECT_URI` | Точный URL callback-а, совпадающий с настройкой в VK | `http://localhost/api/auth/vk` |
 | `FRONTEND_URL` | Куда редиректить после `/api/auth/vk` (JWT кладутся в hash) | `http://localhost/` |
 | `BLACKLIST_WORDS` | (опц.) Переопределяет дефолтный blacklist модерации. Список через запятую | `стоп,нет` |
+| `TEST_MODE` | `true` — эндпоинты с авторизацией принимают заголовок `x-test-user-id` (vk_id) вместо Bearer JWT. В production держите `false`. | `false` |
+
+### Тестовый режим (`TEST_MODE=true`)
+
+При `TEST_MODE=true` любой защищённый эндпоинт дополнительно принимает заголовок `x-test-user-id` со значением `vk_id`. Бэкенд находит пользователя по `vk_id`, при отсутствии создаёт нового с техническими значениями `vk_access_token`, после чего заполняет `req.user = { user_id, vk_id }` как после обычной JWT-авторизации. Если заголовок не передан, сохраняется стандартное поведение — проверка `Authorization: Bearer <jwt>`. Для `auth: "optional"` невалидное значение `vk_id` трактуется как анонимный вызов.
 
 ## config.json модулей
 
