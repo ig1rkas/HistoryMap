@@ -24,6 +24,8 @@ Authorization: Bearer <access_token>
 
 Токены выдаются методом [`GET /api/auth/vk`](../../src/backend/modules/api/methods/auth/vk/) после успешной VK-авторизации. Схема подключения VK — см. [setup.md](setup.md) и env-переменные `VK_*` в [config.md](config.md).
 
+При `TEST_MODE=true` (см. [config.md](config.md#тестовый-режим-test_modetrue)) дополнительно принимается заголовок `x-test-user-id: <vk_id>`. Он заменяет Bearer-токен, подменяя авторизацию на указанного VK-пользователя (создаётся при первом обращении). В production `TEST_MODE` должен быть выключен.
+
 ## Endpoints на текущий момент
 
 | Метод | Путь | Описание |
