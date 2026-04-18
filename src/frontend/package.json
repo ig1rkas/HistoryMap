@@ -1,11 +1,19 @@
 {
-    "name": "history-map-frontend",
-    "version": "1.0.0",
-    "description": "Frontend for HistoryMap",
-    "scripts": {
-        "test": "echo \"Frontend tests not configured yet\" && exit 0",
-        "test:run": "echo \"Frontend tests not configured yet\" && exit 0"
-    },
-    "author": "Stanevko Ilya",
-    "license": "ISC"
+  "name": "historymap",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.8"
+  }
 }
