@@ -1,23 +1,16 @@
+import logo from '../assets/images/logo.png';
+import noteIcon from '../assets/images/note.png';
+import headphonesIcon from '../assets/images/headphones.png';
+
 export default function Header() {
   return (
     <header className="header">
       <div className="logo-block">
         <div className="logo-block__icon-wrap">
-          <div className="logo-block__icon-inner">
-            <svg
-              viewBox="0 0 24 24"
-              className="logo-block__svg"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M4 6.5 8.5 5l7 1.5L20 5v12.5L15.5 19l-7-1.5L4 19V6.5Z" />
-              <path d="M8.5 5v12.5M15.5 6.5V19" />
-            </svg>
-          </div>
+          <img src={logo} alt="HistoryMap" className="logo-block__image" />
         </div>
 
-        <div>
+        <div className="logo-block__text">
           <div className="logo-block__title">HistoryMap</div>
           <div className="logo-block__subtitle">
             Интерактивная карта Санкт-Петербурга
@@ -26,11 +19,24 @@ export default function Header() {
       </div>
 
       <div className="header__actions">
-        <button className="ghost-button">📅 Предложения по улучшению</button>
-        <button className="ghost-button">🎧 Обратная связь</button>
+        <button className="ghost-button ghost-button--with-icon" type="button">
+          <img src={noteIcon} alt="" className="ghost-button__icon-image" />
+          <span>Предложения по улучшению</span>
+        </button>
+
+        <button className="ghost-button ghost-button--with-icon" type="button">
+          <img
+            src={headphonesIcon}
+            alt=""
+            className="ghost-button__icon-image"
+          />
+          <span>Обратная связь</span>
+        </button>
       </div>
 
-      <button className="login-button">Войти с помощью VK →</button>
+      <button className="login-button" type="button">
+        Войти с помощью VK <span aria-hidden="true">→</span>
+      </button>
     </header>
   );
 }

@@ -5,9 +5,7 @@ export default function HeroContent() {
     <section className="hero__content">
       <div className="hero__text-wrap">
         <h1 className="hero__title">
-          <span className="title-line">
-            Найдите для себя интересное
-          </span>
+          <span className="title-line">Найдите для себя интересное</span>
           <span className="title-line">
             историческое место <span className="accent italic">из 95</span>
           </span>
@@ -16,7 +14,9 @@ export default function HeroContent() {
           </span>
         </h1>
 
-        <button className="primary-button">К поиску →</button>
+        <button className="primary-button" type="button">
+          К поиску <span aria-hidden="true">→</span>
+        </button>
       </div>
 
       <div className="info-cards">
