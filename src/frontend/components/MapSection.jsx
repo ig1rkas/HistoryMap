@@ -79,9 +79,7 @@ export default function MapSection() {
               setTimeout(() => {
                 try {
                   ref.container.fitToViewport();
-                } catch (e) {
-                  // ignore
-                }
+                } catch (_) {}
               }, 100);
             }
           }}
