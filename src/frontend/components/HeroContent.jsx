@@ -6,12 +6,12 @@ export default function HeroContent() {
     <section className="hero__content">
       <div className="hero__text-wrap">
         <h1 className="hero__title">
-          <span className="title-line">Найдите для себя интересное</span>
+          <span className="title-line">Интерактивная карта по развитию</span>
           <span className="title-line">
-            историческое место <span className="accent italic">из 95</span>
+            домов быта в Санкт-Петербурге - 
           </span>
           <span className="title-line">
-            <span className="accent italic">различных</span> локаций
+            <span className="accent italic">9 различных</span> домов
           </span>
         </h1>
 
