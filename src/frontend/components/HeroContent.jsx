@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import InfoCard from './InfoCard';
 
 export default function HeroContent() {
@@ -14,9 +15,9 @@ export default function HeroContent() {
           </span>
         </h1>
 
-        <button className="primary-button" type="button">
+        <Link to="/map" className="primary-button">
           К поиску <span aria-hidden="true">→</span>
-        </button>
+        </Link>
       </div>
 
       <div className="info-cards">
@@ -33,11 +34,6 @@ export default function HeroContent() {
             text="Настройте фильтры под свои интересы: архитектура, тип, локация или эпоха"
           />
         </div>
-      </div>
-
-      <div className="footer-note">
-        <div className="footer-note__brand">HistoryMap</div>
-        <div className="footer-note__copyright">Copyright © 2026</div>
       </div>
     </section>
   );

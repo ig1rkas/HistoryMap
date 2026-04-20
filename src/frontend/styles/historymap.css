@@ -34,8 +34,6 @@ button {
   overflow: hidden;
 }
 
-/* ВОЛНА */
-
 .page__right-gradient {
   position: absolute;
   top: 0;
@@ -55,8 +53,6 @@ button {
   width: 100%;
   height: 100%;
 }
-
-/* ДЕКОР */
 
 .page__decor {
   position: absolute;
@@ -87,8 +83,6 @@ button {
   height: 610px;
 }
 
-/* CONTAINER */
-
 .container {
   position: relative;
   z-index: 2;
@@ -100,25 +94,31 @@ button {
   flex-direction: column;
 }
 
-/* HEADER */
+/* SHARED HEADER */
 
 .header {
   display: grid;
   grid-template-columns: max-content max-content 1fr;
   align-items: center;
-  column-gap: 16px;
+  column-gap: 14px;
+}
+
+.header--map {
+  height: auto;
+  min-height: 0;
 }
 
 .logo-block {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  text-decoration: none;
 }
 
 .logo-block__icon-wrap {
-  width: 58px;
-  height: 58px;
-  border-radius: 18px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.88);
   display: flex;
   align-items: center;
@@ -128,8 +128,8 @@ button {
 }
 
 .logo-block__image {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
@@ -139,43 +139,68 @@ button {
 }
 
 .logo-block__title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1;
   color: #161616;
 }
 
 .logo-block__subtitle {
-  margin-top: 4px;
-  font-size: 11px;
-  line-height: 1.25;
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.2;
   color: #a29ea6;
 }
 
 .header__actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .ghost-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 48px;
-  padding: 0 18px;
-  border-radius: 18px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.03);
   color: #5d5a61;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    background-color 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease,
+    opacity 0.22s ease;
+  will-change: transform;
+}
+
+.ghost-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.ghost-button:active {
+  transform: translateY(0);
+}
+
+.ghost-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 76, 114, 0.14),
+    0 12px 24px rgba(0, 0, 0, 0.06);
 }
 
 .ghost-button__icon-image {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   object-fit: contain;
 }
 
@@ -184,15 +209,98 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 54px;
-  padding: 0 24px;
-  border-radius: 18px;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 16px;
   background: #ffffff;
   color: #ff4c72;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    background-color 0.22s ease,
+    color 0.22s ease,
+    opacity 0.22s ease;
+  will-change: transform;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(255, 76, 114, 0.14);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+.login-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 76, 114, 0.14),
+    0 12px 24px rgba(0, 0, 0, 0.06);
+}
+
+.header__user {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: max-content;
+}
+
+.header__user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.header__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+
+/* SHARED FOOTER */
+
+.site-footer {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #8d8a92;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+
+.site-footer__brand {
+  font-size: 15px;
+  font-weight: 700;
+  color: #7d7a82;
+}
+
+.site-footer__copy {
+  font-size: 12px;
+}
+
+.site-footer--landing {
+  margin-top: auto;
+  padding-bottom: 2px;
+  transform: translateY(10px);
+}
+
+.site-footer--map {
+  margin-top: auto;
+  width: min(100%, 1560px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 /* HERO */
@@ -203,7 +311,7 @@ button {
   gap: 38px;
   flex: 1;
   align-items: start;
-  padding-top: 10px;
+  padding-top: 4px;
   min-height: 0;
 }
 
@@ -212,7 +320,7 @@ button {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding-top: 54px;
+  padding-top: 42px;
   min-height: 0;
 }
 
@@ -258,9 +366,31 @@ button {
   font-size: 16px;
   font-weight: 700;
   white-space: nowrap;
+  text-decoration: none;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    filter 0.22s ease,
+    opacity 0.22s ease;
+  will-change: transform;
 }
 
-/* CARDS */
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 34px rgba(255, 74, 116, 0.3);
+  filter: brightness(1.03);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+}
+
+.primary-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 76, 114, 0.14),
+    0 12px 24px rgba(0, 0, 0, 0.06);
+}
 
 .info-cards {
   margin-top: 42px;
@@ -327,30 +457,6 @@ button {
   font-size: 13px;
   line-height: 1.5;
 }
-
-/* FOOTER */
-
-.footer-note {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding-top: 10px;
-  color: #8d8a92;
-  font-size: 12px;
-}
-
-.footer-note__brand {
-  font-size: 15px;
-  font-weight: 700;
-  color: #7d7a82;
-}
-
-.footer-note__copyright {
-  font-size: 12px;
-}
-
-/* MAP */
 
 .hero__map-section {
   position: relative;
@@ -442,7 +548,8 @@ button {
     grid-column: 1 / -1;
   }
 
-  .login-button {
+  .login-button,
+  .header__user {
     grid-column: 2;
     grid-row: 1;
   }
@@ -462,10 +569,6 @@ button {
 
   .map-shell {
     height: 460px;
-  }
-
-  .footer-note {
-    margin-top: 30px;
   }
 }
 
@@ -496,7 +599,8 @@ button {
     flex-wrap: wrap;
   }
 
-  .login-button {
+  .login-button,
+  .header__user {
     grid-column: auto;
     grid-row: auto;
     justify-self: start;
@@ -554,9 +658,13 @@ button {
     border-radius: 22px;
   }
 
-  .footer-note {
+  .site-footer {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+    height: auto;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    transform: none;
   }
 }

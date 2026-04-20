@@ -1,11 +1,22 @@
+import { Link } from 'react-router-dom';
 import logo from '../assets/images/logo.png';
 import noteIcon from '../assets/images/note.png';
 import headphonesIcon from '../assets/images/headphones.png';
 
-export default function Header() {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
+export default function Header({
+  variant = 'landing',
+  user = null,
+  showLogin = true,
+}) {
+  const handleVkLogin = () => {
+    window.location.href = `${API_BASE_URL}/api/auth/vk`;
+  };
+
   return (
-    <header className="header">
-      <div className="logo-block">
+    <header className={`header ${variant === 'map' ? 'header--map' : ''}`}>
+      <Link to="/" className="logo-block">
         <div className="logo-block__icon-wrap">
           <img src={logo} alt="HistoryMap" className="logo-block__image" />
         </div>
@@ -16,7 +27,7 @@ export default function Header() {
             Интерактивная карта Санкт-Петербурга
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="header__actions">
         <button className="ghost-button ghost-button--with-icon" type="button">
@@ -34,9 +45,22 @@ export default function Header() {
         </button>
       </div>
 
-      <button className="login-button" type="button">
-        Войти с помощью VK <span aria-hidden="true">→</span>
-      </button>
+      {user ? (
+        <div className="header__user">
+          <span className="header__user-name">{user.name}</span>
+          <img
+            className="header__avatar"
+            src={user.avatar}
+            alt={user.name}
+          />
+        </div>
+      ) : showLogin ? (
+        <button className="login-button" type="button" onClick={handleVkLogin}>
+          Войти с помощью VK <span aria-hidden="true">→</span>
+        </button>
+      ) : (
+        <div />
+      )}
     </header>
   );
 }
