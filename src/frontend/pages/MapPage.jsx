@@ -16,7 +16,7 @@ const mockUser = {
 };
 
 const locations = [
-  { id: 1, title: 'Исаакиевский собор', coords: [59.9343, 30.3061] },
+  { id: 1, title: 'Исаакиевский собор', coords: [59.9343, 30.3061], content: [ { title: '' } ] },
   { id: 2, title: 'Кунсткамера', coords: [59.9416, 30.3049] },
   { id: 3, title: 'Спас на Крови', coords: [59.9407, 30.3288] },
   { id: 4, title: 'Русский музей', coords: [59.9386, 30.3325] },
