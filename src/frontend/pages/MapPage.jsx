@@ -4,6 +4,13 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import filterIcon from '../assets/images/filter.png';
 
+const placeImages = import.meta.glob('../assets/images/*.png', {
+  eager: true,
+  import: 'default',
+});
+
+const img = (name) => placeImages[`../assets/images/${name}`];
+
 const ymapsQuery = {
   apikey: import.meta.env.VITE_YANDEX_MAPS_API_KEY,
   lang: 'ru_RU',
@@ -20,7 +27,7 @@ const locations = [
     id: 1,
     title: 'Дом быта на Коломенской улице',
     coords: [59.923, 30.352],
-    image: './assets/images/kolomenskiy.png',
+    image: img('kolomenskiy.png'),
     shortDescription:
       'Первый дом быта Ленинграда, с которого началась вся система централизованных бытовых услуг.',
     description:
@@ -35,7 +42,7 @@ const locations = [
     id: 2,
     title: 'Дом быта на Нарвском проспекте',
     coords: [59.901, 30.274],
-    image: './assets/images/narvskiy.png',
+    image: img('narvskiy.png'),
     shortDescription:
       'Один из первых домов быта с продуманной интеграцией в историческую городскую среду.',
     description:
@@ -50,7 +57,7 @@ const locations = [
     id: 3,
     title: 'Дом быта на Подольской улице',
     coords: [59.915, 30.329],
-    image: './assets/images/podolskaya.png',
+    image: img('podolskaya.png'),
     shortDescription:
       'Районный центр бытовых услуг, со временем превратившийся в ювелирный кластер.',
     description:
@@ -65,7 +72,7 @@ const locations = [
     id: 4,
     title: 'Дом быта на Суворовском проспекте',
     coords: [59.939, 30.38],
-    image: './assets/images/syvoroskiy.png',
+    image: img('syvoroskiy.png'),
     shortDescription:
       'Яркий пример советского модернизма, контрастирующий с исторической застройкой.',
     description:
@@ -80,7 +87,7 @@ const locations = [
     id: 5,
     title: 'Дом быта на Бармалеева улице',
     coords: [59.966, 30.306],
-    image: './assets/images/barmaleeva.png',
+    image: img('barmaleeva.png'),
     shortDescription:
       'Интересный архитектурный объект, не сохранившийся до наших дней.',
     description:
@@ -95,7 +102,7 @@ const locations = [
     id: 6,
     title: 'Дом быта в Финском переулке',
     coords: [59.941, 30.359],
-    image: './assets/images/finskiy.png',
+    image: img('finskiy.png'),
     shortDescription:
       'Типовой дом быта, отражающий массовое развитие системы услуг в городе.',
     description:
@@ -110,7 +117,7 @@ const locations = [
     id: 7,
     title: 'Дом быта на Разъезжей улице',
     coords: [59.925, 30.343],
-    image: './assets/images/razezhaya.png',
+    image: img('razezhaya.png'),
     shortDescription:
       'Характерный пример советского модернизма с выразительным стеклянным фасадом.',
     description:
@@ -125,7 +132,7 @@ const locations = [
     id: 8,
     title: 'Дом быта на Лермонтовском проспекте',
     coords: [59.925, 30.291],
-    image: './assets/images/lermontovskiy.png',
+    image: img('lermontovskiy.png'),
     shortDescription:
       'Крупный районный центр бытовых услуг с выразительной модернистской архитектурой.',
     description:
@@ -140,7 +147,7 @@ const locations = [
     id: 9,
     title: 'Дом быта «Кристалл»',
     coords: [59.881, 30.442],
-    image: './assets/images/image.png',
+    image: img('image.png'),
     shortDescription:
       'Крупнейший дом быта в Ленинграде и один из самых масштабных в СССР.',
     description:
