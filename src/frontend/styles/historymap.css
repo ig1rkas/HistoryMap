@@ -311,12 +311,15 @@ button {
 
 .hero {
   display: grid;
-  grid-template-columns: 400px minmax(0, 1fr);
-  gap: 1px;
+  /* grid-template-columns: 400px minmax(0, 1fr); */
+  /* gap: 1px; */
   flex: 1;
   align-items: start;
   padding-top: 4px;
   min-height: 0;
+
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 30px;
 }
 
 .hero__content {
@@ -511,11 +514,6 @@ button {
     max-width: 1220px;
   }
 
-  .hero {
-    grid-template-columns: 380px minmax(0, 1fr);
-    gap: 30px;
-  }
-
   .hero__title {
     font-size: 34px;
   }
@@ -559,17 +557,13 @@ button {
     grid-row: 1;
   }
 
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
   .hero__content {
     height: auto;
     padding-top: 28px;
   }
 
   .hero__map-section {
-    padding-top: 30px;
+    /* padding-top: 30px; */
   }
 
   .map-shell {
