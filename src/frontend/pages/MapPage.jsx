@@ -19,7 +19,7 @@ const locations = [
   {
     id: 1,
     title: 'Дом быта на Коломенской улице',
-    coords: [59.925, 30.343],
+    coords: [59.923, 30.352],
     image: './assets/images/kolomenskiy.png',
     shortDescription:
       'Первый дом быта Ленинграда, с которого началась вся система централизованных бытовых услуг.',
@@ -189,6 +189,7 @@ export default function MapPage() {
   const mapShellRef = useRef(null);
   const activePlaceRef = useRef(null);
   const rafRef = useRef(null);
+  const continuousRafRef = useRef(null);
 
   const pinSize = useMemo(() => getPinSize(zoom), [zoom]);
   const pinIcon = useMemo(() => buildPinIcon(pinSize), [pinSize]);
@@ -205,7 +206,7 @@ export default function MapPage() {
 
   const calculateCardPosition = (pointX, pointY, shellWidth, shellHeight) => {
     const { width: cardWidth, height: cardHeight } = getCardMetrics();
-    const margin = 18;
+    const margin = 24;
 
     let left = pointX - cardWidth / 2 + 14;
     left = Math.max(margin, Math.min(left, shellWidth - cardWidth - margin));
@@ -222,6 +223,7 @@ export default function MapPage() {
       top = Math.max(margin, shellHeight - cardHeight - margin);
     }
 
+    top -= 50;
     return { left, top, placement };
   };
 
@@ -233,18 +235,33 @@ export default function MapPage() {
 
     try {
       const projection = map.options.get('projection');
+      const containerSize = map.container.getSize();
+
+      let currentZoom = map.getZoom();
+      let mapCenter = map.getGlobalPixelCenter();
+
+      try {
+        const liveState = map.action.getCurrentState();
+        if (liveState) {
+          if (liveState.globalPixelCenter) {
+            mapCenter = liveState.globalPixelCenter;
+          }
+          if (typeof liveState.zoom === 'number') {
+            currentZoom = liveState.zoom;
+          }
+        }
+      } catch (_) {}
 
       const nextPoints = locations.map((location) => {
         const globalPixels = projection.toGlobalPixels(
           location.coords,
-          map.getZoom()
+          currentZoom
         );
-        const pagePixels = map.converter.globalToPage(globalPixels);
 
         return {
           id: location.id,
-          x: pagePixels[0],
-          y: pagePixels[1],
+          x: globalPixels[0] - mapCenter[0] + containerSize[0] / 2,
+          y: globalPixels[1] - mapCenter[1] + containerSize[1] / 2,
         };
       });
 
@@ -276,6 +293,29 @@ export default function MapPage() {
     rafRef.current = requestAnimationFrame(() => {
       syncMarkersAndCard();
     });
+  };
+
+  const startContinuousSync = () => {
+    if (continuousRafRef.current) return;
+
+    let frame = 0;
+    const tick = () => {
+      if (frame % 3 === 0) {
+        syncMarkersAndCard();
+      }
+      frame += 1;
+      continuousRafRef.current = requestAnimationFrame(tick);
+    };
+
+    continuousRafRef.current = requestAnimationFrame(tick);
+  };
+
+  const stopContinuousSync = () => {
+    if (continuousRafRef.current) {
+      cancelAnimationFrame(continuousRafRef.current);
+      continuousRafRef.current = null;
+    }
+    syncMarkersAndCard();
   };
 
   const openPlaceCard = (place) => {
@@ -330,15 +370,56 @@ export default function MapPage() {
       scheduleSync();
     };
 
+    const handlePointerDown = (event) => {
+      const shell = mapShellRef.current;
+      if (!shell) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest('.map-page__marker')) return;
+      if (!shell.contains(target)) return;
+      startContinuousSync();
+    };
+
+    const handlePointerUp = () => {
+      stopContinuousSync();
+    };
+
+    const handleWheel = () => {
+      startContinuousSync();
+      window.clearTimeout(handleWheel._t);
+      handleWheel._t = window.setTimeout(() => {
+        stopContinuousSync();
+      }, 250);
+    };
+
     document.addEventListener('mousedown', handleDocumentClick);
     window.addEventListener('resize', handleResize);
+    window.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+    const shellEl = mapShellRef.current;
+    if (shellEl) {
+      shellEl.addEventListener('wheel', handleWheel, { passive: true });
+    }
 
     return () => {
       document.removeEventListener('mousedown', handleDocumentClick);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+      if (shellEl) {
+        shellEl.removeEventListener('wheel', handleWheel);
+      }
+      window.clearTimeout(handleWheel._t);
 
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
+      }
+
+      if (continuousRafRef.current) {
+        cancelAnimationFrame(continuousRafRef.current);
+        continuousRafRef.current = null;
       }
     };
   }, [markerPoints, detailPlace]);
@@ -409,6 +490,13 @@ export default function MapPage() {
                         map.behaviors.enable('dblClickZoom');
                         map.behaviors.enable('multiTouch');
 
+                        map.action.events.add('tick', scheduleSync);
+                        map.action.events.add('tickcomplete', scheduleSync);
+                        map.events.add('actiontick', scheduleSync);
+                        map.events.add('sizechange', scheduleSync);
+                        map.events.add('actionbegin', startContinuousSync);
+                        map.events.add('actionend', stopContinuousSync);
+
                         scheduleSync();
                       } catch (_) {}
                     }, 100);
@@ -458,9 +546,9 @@ export default function MapPage() {
                       src={activePlace.image}
                       alt={activePlace.title}
                     />
-                    <div className="map-place-card__fav" aria-hidden="true">
+                    {/* <div className="map-place-card__fav" aria-hidden="true">
                       ★
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="map-place-card__content">
@@ -481,80 +569,6 @@ export default function MapPage() {
                 </article>
               </div>
             )}
-
-            {detailPlace && (
-              <aside className="map-detail-drawer">
-                <button
-                  className="map-detail-drawer__close"
-                  type="button"
-                  onClick={closeDetailDrawer}
-                  aria-label="Закрыть подробную информацию"
-                >
-                  ×
-                </button>
-
-                <div className="map-detail-drawer__body">
-                  <h2 className="map-detail-drawer__title">{detailPlace.title}</h2>
-
-                  <div className="map-detail-drawer__section">
-                    <div className="map-detail-drawer__label">
-                      {detailPlace.shortDescription}
-                    </div>
-                    <p className="map-detail-drawer__text">
-                      {detailPlace.description}
-                    </p>
-                  </div>
-
-                  <div className="map-detail-drawer__section">
-                    <div className="map-detail-drawer__label">Галерея</div>
-
-                    <div className="map-detail-drawer__gallery">
-                      <img
-                        className="map-detail-drawer__gallery-image"
-                        src={detailPlace.image}
-                        alt={detailPlace.title}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="map-detail-drawer__section">
-                    <div className="map-detail-drawer__label">Адрес</div>
-                    <div className="map-detail-drawer__value">
-                      {detailPlace.address}
-                    </div>
-                  </div>
-
-                  <div className="map-detail-drawer__section">
-                    <div className="map-detail-drawer__label">Время работы</div>
-                    <div className="map-detail-drawer__value">
-                      {detailPlace.workHours.map((item) => (
-                        <div key={item}>{item}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="map-detail-drawer__section">
-                    <div className="map-detail-drawer__label">
-                      {detailPlace.extraTitle}
-                    </div>
-                    <p className="map-detail-drawer__text">
-                      {detailPlace.extraText}
-                    </p>
-                  </div>
-                </div>
-              </aside>
-            )}
-
-            <div
-              className={`map-page__map-dim ${
-                isFiltersOpen || detailPlace ? 'map-page__map-dim--visible' : ''
-              }`}
-              onClick={() => {
-                setIsFiltersOpen(false);
-                closePlaceCard();
-                closeDetailDrawer();
-              }}
-            />
 
             <button
               className="map-page__filter-button"
@@ -657,6 +671,82 @@ export default function MapPage() {
             </div>
           </div>
         </main>
+
+        {detailPlace && (
+        <aside className="map-detail-drawer">
+          <button
+            className="map-detail-drawer__close"
+            type="button"
+            onClick={closeDetailDrawer}
+            aria-label="Закрыть подробную информацию"
+          >
+            ×
+          </button>
+
+          <div className="map-detail-drawer__body">
+            <h2 className="map-detail-drawer__title">{detailPlace.title}</h2>
+
+            <div className="map-detail-drawer__section">
+              <div className="map-detail-drawer__label">
+                {detailPlace.shortDescription}
+              </div>
+              <p className="map-detail-drawer__text">
+                {detailPlace.description}
+              </p>
+            </div>
+
+            <div className="map-detail-drawer__section">
+              <div className="map-detail-drawer__label">Галерея</div>
+
+              <div className="map-detail-drawer__gallery">
+                <img
+                  className="map-detail-drawer__gallery-image"
+                  src={detailPlace.image}
+                  alt={detailPlace.title}
+                />
+              </div>
+            </div>
+
+            <div className="map-detail-drawer__section">
+              <div className="map-detail-drawer__label">Адрес</div>
+              <div className="map-detail-drawer__value">
+                {detailPlace.address}
+              </div>
+            </div>
+
+            {/*
+            <div className="map-detail-drawer__section">
+              <div className="map-detail-drawer__label">Время работы</div>
+              <div className="map-detail-drawer__value">
+                {detailPlace.workHours.map((item) => (
+                  <div key={item}>{item}</div>
+                ))}
+              </div>
+            </div>
+            */}
+
+            <div className="map-detail-drawer__section">
+              <div className="map-detail-drawer__label">
+                {detailPlace.extraTitle}
+              </div>
+              <p className="map-detail-drawer__text">
+                {detailPlace.extraText}
+              </p>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      <div
+        className={`map-page__map-dim ${
+          isFiltersOpen || detailPlace ? 'map-page__map-dim--visible' : ''
+        }`}
+        onClick={() => {
+          setIsFiltersOpen(false);
+          closePlaceCard();
+          closeDetailDrawer();
+        }}
+      />
 
         <div className="map-page__footer-wrap">
           <div className="map-page__inner">
