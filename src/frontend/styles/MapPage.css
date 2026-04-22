@@ -143,6 +143,8 @@
     transform 0.22s ease,
     box-shadow 0.22s ease,
     background-color 0.22s ease;
+
+  display: none; /* TODO: убрать */
 }
 
 .map-page__filter-button:hover {
@@ -438,7 +440,7 @@
 .map-detail-drawer__close {
   position: absolute;
   top: 14px;
-  right: -14px;
+  right: -40px;
   width: 32px;
   height: 32px;
   border: 0;
