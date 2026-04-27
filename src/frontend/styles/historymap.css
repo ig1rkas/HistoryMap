@@ -161,7 +161,6 @@ button {
 .ghost-button {
   display: inline-flex;
   align-items: center;
-  display: none;
   gap: 8px;
   height: 42px;
   padding: 0 16px;
@@ -209,7 +208,6 @@ button {
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  display: none;
   gap: 8px;
   height: 48px;
   padding: 0 22px;
@@ -257,7 +255,6 @@ button {
   font-size: 13px;
   font-weight: 600;
   color: #444;
-  visibility: hidden;
 }
 
 .header__avatar {
@@ -267,7 +264,6 @@ button {
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
-  display: none;
 }
 
 /* SHARED FOOTER */
