@@ -119,7 +119,8 @@ describe('GET /api/places/points', () => {
     });
 });
 
-describe('GET /api/places/cards', () => {
+// Метод отключён в config.json (`use: false`) — тесты сохранены на случай повторного включения.
+describe.skip('GET /api/places/cards', () => {
     let ctx;
     beforeAll(async () => {
         ctx = await bootTestServer();
