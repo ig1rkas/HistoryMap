@@ -19,11 +19,12 @@ async function seedPlace(db, overrides = {}) {
     });
 }
 
-async function seedUser(db, vk_id = 42) {
+async function seedUser(db, vk_id = 42, profile = {}) {
     return db.models.users.create({
         vk_id,
         vk_access_token: 'vk-access',
-        vk_access_token_expires: new Date(Date.now() + 3600_000)
+        vk_access_token_expires: new Date(Date.now() + 3600_000),
+        ...profile
     });
 }
 
@@ -140,5 +141,43 @@ describe('GET /api/reviews/list', () => {
         expect(res.body.response.total).toBe(2);
         expect(res.body.response.reviews).toHaveLength(2);
         expect(res.body.response.reviews.map(r => r.text)).toEqual([ 'second', 'first' ]);
+    });
+
+    it('к каждому отзыву прикладывается author с first_name/last_name/avatar', async () => {
+        const author = await seedUser(ctx.modules.db, 202, {
+            first_name: 'Анна', last_name: 'Аннова', avatar: 'https://vk.com/a.jpg'
+        });
+        const place = await seedPlace(ctx.modules.db, { title: 'list-place-author' });
+        await ctx.modules.db.models.reviews.create({
+            author_id: author._id, place_id: place._id, rating: 5, text: 'with-author',
+            moderation_status: 'approved'
+        });
+
+        const res = await request(ctx.app).get('/api/reviews/list').query({ place_id: String(place._id) });
+        expect(res.status).toBe(200);
+        const review = res.body.response.reviews[0];
+        expect(review.author).toMatchObject({
+            _id: String(author._id),
+            vk_id: 202,
+            first_name: 'Анна',
+            last_name: 'Аннова',
+            avatar: 'https://vk.com/a.jpg'
+        });
+        expect(review.author.vk_access_token).toBeUndefined();
+        expect(review.author.refresh_token).toBeUndefined();
+    });
+
+    it('если автор отзыва удалён из users — author = null, отзыв всё равно отдаётся', async () => {
+        const place = await seedPlace(ctx.modules.db, { title: 'list-place-orphan' });
+        const ghostId = '507f1f77bcf86cd799439099';
+        await ctx.modules.db.models.reviews.create({
+            author_id: ghostId, place_id: place._id, rating: 4, text: 'orphan',
+            moderation_status: 'approved'
+        });
+
+        const res = await request(ctx.app).get('/api/reviews/list').query({ place_id: String(place._id) });
+        expect(res.status).toBe(200);
+        expect(res.body.response.reviews[0].text).toBe('orphan');
+        expect(res.body.response.reviews[0].author).toBeNull();
     });
 });
