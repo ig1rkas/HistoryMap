@@ -92,7 +92,7 @@ class AuthVK extends Method {
         let profile = null;
         try { profile = await vk.getUserInfo(tokenData.access_token) }
         catch (e) {
-            modules.logger.warn('VK ID user_info failed: ' + modules.logger.stringError(e, false));
+            modules.logger.warn('VK API users.get failed: ' + modules.logger.stringError(e, false));
         }
 
         const update = {

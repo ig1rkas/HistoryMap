@@ -137,15 +137,15 @@ describe('GET /api/auth/vk', () => {
         expect(String(setCookie)).toContain('HttpOnly');
     });
 
-    it('с ?code — мокает VK ID token exchange + user_info, upsert-ит user с профилем и редиректит на FRONTEND_URL с токенами в hash', async () => {
+    it('с ?code — мокает VK ID token exchange + users.get, upsert-ит user с профилем и редиректит на FRONTEND_URL с токенами в hash', async () => {
         const { agent, state } = await startFlow();
         const fakeUserId = 123456;
         vi.stubGlobal('fetch', async (url) => {
             if (String(url).includes('/oauth2/auth')) {
                 return { ok: true, json: async () => ({ access_token: 'vk-access', refresh_token: 'vk-refresh', expires_in: 3600, user_id: fakeUserId, state }) };
             }
-            if (String(url).includes('/oauth2/user_info')) {
-                return { ok: true, json: async () => ({ user: { user_id: String(fakeUserId), first_name: 'Иван', last_name: 'Иванов', avatar: 'https://vk.com/avatar.jpg' } }) };
+            if (String(url).includes('/method/users.get')) {
+                return { ok: true, json: async () => ({ response: [ { id: fakeUserId, first_name: 'Иван', last_name: 'Иванов', photo_200: 'https://vk.com/avatar.jpg' } ] }) };
             }
             throw new Error('Unexpected fetch URL: ' + url);
         });
@@ -167,14 +167,14 @@ describe('GET /api/auth/vk', () => {
         expect(user.avatar).toBe('https://vk.com/avatar.jpg');
     });
 
-    it('если user_info упал — логин всё равно проходит, профиль остаётся пустым', async () => {
+    it('если users.get упал — логин всё равно проходит, профиль остаётся пустым', async () => {
         const { agent, state } = await startFlow();
         const fakeUserId = 999000;
         vi.stubGlobal('fetch', async (url) => {
             if (String(url).includes('/oauth2/auth')) {
                 return { ok: true, json: async () => ({ access_token: 'vk-access', expires_in: 3600, user_id: fakeUserId, state }) };
             }
-            return { ok: true, json: async () => ({ error: 'user_info_unavailable' }) };
+            return { ok: true, json: async () => ({ error: { error_code: 5, error_msg: 'User authorization failed' } }) };
         });
 
         const res = await agent.get(`/api/auth/vk?code=abc&state=${encodeURIComponent(state)}&device_id=dev-1`);

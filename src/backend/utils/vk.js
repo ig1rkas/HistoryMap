@@ -2,7 +2,8 @@ const crypto = require('node:crypto');
 
 const VK_ID_AUTHORIZE_URL = 'https://id.vk.com/authorize';
 const VK_ID_TOKEN_URL = 'https://id.vk.com/oauth2/auth';
-const VK_ID_USER_INFO_URL = 'https://id.vk.com/oauth2/user_info';
+const VK_API_USERS_GET_URL = 'https://api.vk.com/method/users.get';
+const VK_API_VERSION = '5.199';
 
 function base64url(buf) {
     return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -29,7 +30,8 @@ function getAuthorizeUrl({ state, code_challenge, scope = '' } = {}) {
         redirect_uri: process.env.VK_REDIRECT_URI,
         state,
         code_challenge,
-        code_challenge_method: 's256'
+        code_challenge_method: 's256',
+        lang: 'ru'
     });
     if (scope) params.set('scope', scope);
     return VK_ID_AUTHORIZE_URL + '?' + params.toString();
@@ -48,7 +50,8 @@ async function exchangeCodeForToken({ code, code_verifier, device_id, state }) {
         code_verifier,
         code,
         device_id,
-        state
+        state,
+        lang: 'ru'
     });
     const resp = await fetch(VK_ID_TOKEN_URL, {
         method: 'POST',
@@ -65,27 +68,36 @@ async function exchangeCodeForToken({ code, code_verifier, device_id, state }) {
 }
 
 /**
- * Получает профиль пользователя VK ID по access_token из обмена.
+ * Получает профиль пользователя через VK API `users.get` с `lang=ru` —
+ * чтобы ФИО приходили на русском.
  * @param {string} access_token
- * @returns {Promise<{ user_id: string, first_name?: string, last_name?: string, avatar?: string, email?: string, phone?: string, [k: string]: any }>}
+ * @returns {Promise<{ user_id: string, first_name?: string, last_name?: string, avatar?: string }>}
  */
 async function getUserInfo(access_token) {
     const body = new URLSearchParams({
-        client_id: process.env.VK_CLIENT_ID,
-        access_token
+        access_token,
+        v: VK_API_VERSION,
+        fields: 'photo_200',
+        lang: 'ru'
     });
-    const resp = await fetch(VK_ID_USER_INFO_URL, {
+    const resp = await fetch(VK_API_USERS_GET_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString()
     });
     const data = await resp.json();
-    if (!data || (!data.user && !data.user_id)) {
-        const err = new Error('VK ID user_info failed');
+    const user = data && Array.isArray(data.response) ? data.response[0] : null;
+    if (!user) {
+        const err = new Error('VK API users.get failed');
         err.details = data;
         throw err;
     }
-    return data.user || data;
+    return {
+        user_id: String(user.id),
+        first_name: user.first_name,
+        last_name: user.last_name,
+        avatar: user.photo_200
+    };
 }
 
 module.exports = { getAuthorizeUrl, exchangeCodeForToken, getUserInfo, generatePkcePair, generateState };
