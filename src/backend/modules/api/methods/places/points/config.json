@@ -26,6 +26,7 @@
                         "properties": {
                             "_id": { "type": "string" },
                             "title": { "type": "string" },
+                            "short_description": { "type": "string" },
                             "category": { "type": "string" },
                             "coordinates": { "type": "array", "items": { "type": "number" }, "description": "[lon, lat]" },
                             "preview": { "type": "string", "nullable": true },

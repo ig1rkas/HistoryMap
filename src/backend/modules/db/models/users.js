@@ -25,6 +25,19 @@ module.exports = [
         refresh_token_expires: {
             ...createTypesValidator([ Date ], true),
             default: null
+        },
+
+        first_name: {
+            ...createTypesValidator([ 'string' ], true),
+            default: null
+        },
+        last_name: {
+            ...createTypesValidator([ 'string' ], true),
+            default: null
+        },
+        avatar: {
+            ...createTypesValidator([ 'string' ], true),
+            default: null
         }
     },
 
