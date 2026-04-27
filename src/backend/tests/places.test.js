@@ -105,10 +105,11 @@ describe('GET /api/places/points', () => {
         res.body.response.points.forEach(p => expect(typeof p.distance).toBe('number'));
     });
 
-    it('preview собирается из gallery[preview_gallery_id]', async () => {
+    it('preview собирается из gallery[preview_gallery_id], short_description возвращается', async () => {
         const res = await request(ctx.app).get('/api/places/points').query({ category: 'cathedral' });
         const isaak = res.body.response.points.find(p => p.title === 'Исаакиевский собор');
         expect(isaak.preview).toBe('https://example.com/isaak-1.jpg');
+        expect(isaak.short_description).toBe('Православный собор в центре СПб');
     });
 
     it('невалидный lat вне [-90,90] → 400', async () => {

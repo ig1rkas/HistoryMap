@@ -14,7 +14,7 @@ class PlacesPoints extends Method {
 
         const Place = modules.db.models.places;
         const projection = {
-            _id: 1, title: 1, coordinates: 1,
+            _id: 1, title: 1, short_description: 1, coordinates: 1,
             gallery: 1, preview_gallery_id: 1,
             avg_rating: 1, category: 1
         };
@@ -41,6 +41,7 @@ class PlacesPoints extends Method {
         const points = docs.map(doc => ({
             _id: doc._id,
             title: doc.title,
+            short_description: doc.short_description,
             category: doc.category,
             coordinates: doc.coordinates && Array.isArray(doc.coordinates.coordinates) ? doc.coordinates.coordinates : null,
             preview: extractPreview(doc),
