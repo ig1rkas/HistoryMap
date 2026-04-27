@@ -144,7 +144,6 @@
     box-shadow 0.22s ease,
     background-color 0.22s ease;
 
-  display: none; /* TODO: убрать */
 }
 
 .map-page__filter-button:hover {
