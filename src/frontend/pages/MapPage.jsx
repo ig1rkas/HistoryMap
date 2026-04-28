@@ -167,19 +167,29 @@ function getPinSize(zoom) {
 
 function buildPinIcon(size) {
   const viewBox = 54;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+  const svg = `
     <svg width="${size}" height="${size}" viewBox="0 0 ${viewBox} ${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="27" cy="27" r="27" fill="#FF8AA4" fill-opacity="0.22"/>
-      <circle cx="27" cy="27" r="20" fill="#FF3D69"/>
-      <path d="M27 18.8L29.38 23.64L34.72 24.42L30.86 28.14L31.78 33.38L27 30.88L22.22 33.38L23.14 28.14L19.28 24.42L24.62 23.64L27 18.8Z" fill="white"/>
+      <path d="M27 4C16.5 4 8 12.5 8 23C8 36.5 27 51 27 51C27 51 46 36.5 46 23C46 12.5 37.5 4 27 4Z" fill="#FF3F68"/>
+      <path d="M27 4C16.5 4 8 12.5 8 23C8 36.5 27 51 27 51C27 51 46 36.5 46 23C46 12.5 37.5 4 27 4Z" fill="url(#paint0_linear)"/>
+      <circle cx="27" cy="23" r="9" fill="white"/>
+      <circle cx="27" cy="23" r="4.5" fill="#FF3F68"/>
+      <defs>
+        <linearGradient id="paint0_linear" x1="8" y1="4" x2="47" y2="51" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#FF2F59"/>
+          <stop offset="1" stop-color="#FF6B8C"/>
+        </linearGradient>
+      </defs>
     </svg>
-  `)}`;
+  `;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
 function getCardMetrics() {
   if (window.innerWidth <= 900) {
     return { width: 300, height: 320 };
   }
+
   return { width: 370, height: 380 };
 }
 
@@ -188,6 +198,7 @@ export default function MapPage() {
   const [showNearbyOnly, setShowNearbyOnly] = useState(true);
   const [zoom, setZoom] = useState(13);
   const [markerPoints, setMarkerPoints] = useState([]);
+  const [userLocationPoint, setUserLocationPoint] = useState(null);
   const [activePlace, setActivePlace] = useState(null);
   const [placeCardStyle, setPlaceCardStyle] = useState(null);
   const [detailPlace, setDetailPlace] = useState(null);
@@ -195,6 +206,8 @@ export default function MapPage() {
   const mapRef = useRef(null);
   const mapShellRef = useRef(null);
   const activePlaceRef = useRef(null);
+  const userLocationRef = useRef(null);
+  const hasCenteredOnUserRef = useRef(false);
   const rafRef = useRef(null);
   const continuousRafRef = useRef(null);
 
@@ -214,7 +227,6 @@ export default function MapPage() {
   const calculateCardPosition = (pointX, pointY, shellWidth, shellHeight) => {
     const { width: cardWidth, height: cardHeight } = getCardMetrics();
     const margin = 24;
-
     let left = pointX - cardWidth / 2 + 14;
     left = Math.max(margin, Math.min(left, shellWidth - cardWidth - margin));
 
@@ -230,7 +242,8 @@ export default function MapPage() {
       top = Math.max(margin, shellHeight - cardHeight - margin);
     }
 
-    top -= 50;
+    top -= 100;
+
     return { left, top, placement };
   };
 
@@ -243,16 +256,17 @@ export default function MapPage() {
     try {
       const projection = map.options.get('projection');
       const containerSize = map.container.getSize();
-
       let currentZoom = map.getZoom();
       let mapCenter = map.getGlobalPixelCenter();
 
       try {
         const liveState = map.action.getCurrentState();
+
         if (liveState) {
           if (liveState.globalPixelCenter) {
             mapCenter = liveState.globalPixelCenter;
           }
+
           if (typeof liveState.zoom === 'number') {
             currentZoom = liveState.zoom;
           }
@@ -274,6 +288,22 @@ export default function MapPage() {
 
       setMarkerPoints(nextPoints);
 
+      const userCoords = userLocationRef.current;
+
+      if (userCoords) {
+        const userGlobalPixels = projection.toGlobalPixels(
+          userCoords,
+          currentZoom
+        );
+
+        setUserLocationPoint({
+          x: userGlobalPixels[0] - mapCenter[0] + containerSize[0] / 2,
+          y: userGlobalPixels[1] - mapCenter[1] + containerSize[1] / 2,
+        });
+      } else {
+        setUserLocationPoint(null);
+      }
+
       if (activePlaceRef.current) {
         const activePoint = nextPoints.find(
           (point) => point.id === activePlaceRef.current.id
@@ -286,6 +316,7 @@ export default function MapPage() {
             shell.clientWidth,
             shell.clientHeight
           );
+
           setPlaceCardStyle(nextStyle);
         }
       }
@@ -306,10 +337,12 @@ export default function MapPage() {
     if (continuousRafRef.current) return;
 
     let frame = 0;
+
     const tick = () => {
       if (frame % 3 === 0) {
         syncMarkersAndCard();
       }
+
       frame += 1;
       continuousRafRef.current = requestAnimationFrame(tick);
     };
@@ -322,6 +355,7 @@ export default function MapPage() {
       cancelAnimationFrame(continuousRafRef.current);
       continuousRafRef.current = null;
     }
+
     syncMarkersAndCard();
   };
 
@@ -341,6 +375,7 @@ export default function MapPage() {
         shell.clientWidth,
         shell.clientHeight
       );
+
       setPlaceCardStyle(nextStyle);
     } else {
       scheduleSync();
@@ -352,6 +387,56 @@ export default function MapPage() {
     closePlaceCard();
     setIsFiltersOpen(false);
   };
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) {
+      userLocationRef.current = null;
+      setUserLocationPoint(null);
+      return undefined;
+    }
+
+    const handlePosition = (position) => {
+      const coords = [
+        position.coords.latitude,
+        position.coords.longitude,
+      ];
+
+      userLocationRef.current = coords;
+
+      const map = mapRef.current;
+
+      if (map && !hasCenteredOnUserRef.current) {
+        hasCenteredOnUserRef.current = true;
+
+        try {
+          map.setCenter(coords, Math.max(map.getZoom(), 15), {
+            duration: 400,
+          });
+        } catch (_) {}
+      }
+
+      scheduleSync();
+    };
+
+    const handleError = () => {
+      userLocationRef.current = null;
+      setUserLocationPoint(null);
+    };
+
+    const watchId = navigator.geolocation.watchPosition(
+      handlePosition,
+      handleError,
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000,
+      }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
 
   useEffect(() => {
     const handleDocumentClick = (event) => {
@@ -379,11 +464,15 @@ export default function MapPage() {
 
     const handlePointerDown = (event) => {
       const shell = mapShellRef.current;
+
       if (!shell) return;
+
       const target = event.target;
+
       if (!(target instanceof Element)) return;
       if (target.closest('.map-page__marker')) return;
       if (!shell.contains(target)) return;
+
       startContinuousSync();
     };
 
@@ -404,7 +493,9 @@ export default function MapPage() {
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointerup', handlePointerUp);
     window.addEventListener('pointercancel', handlePointerUp);
+
     const shellEl = mapShellRef.current;
+
     if (shellEl) {
       shellEl.addEventListener('wheel', handleWheel, { passive: true });
     }
@@ -415,9 +506,11 @@ export default function MapPage() {
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('pointercancel', handlePointerUp);
+
       if (shellEl) {
         shellEl.removeEventListener('wheel', handleWheel);
       }
+
       window.clearTimeout(handleWheel._t);
 
       if (rafRef.current) {
@@ -459,9 +552,11 @@ export default function MapPage() {
                   }}
                   onBoundsChange={(e) => {
                     const nextZoom = e.get('newZoom');
+
                     if (typeof nextZoom === 'number') {
                       setZoom(nextZoom);
                     }
+
                     scheduleSync();
                   }}
                   instanceRef={(map) => {
@@ -504,6 +599,21 @@ export default function MapPage() {
                         map.events.add('actionbegin', startContinuousSync);
                         map.events.add('actionend', stopContinuousSync);
 
+                        if (
+                          userLocationRef.current &&
+                          !hasCenteredOnUserRef.current
+                        ) {
+                          hasCenteredOnUserRef.current = true;
+
+                          try {
+                            map.setCenter(
+                              userLocationRef.current,
+                              Math.max(map.getZoom(), 15),
+                              { duration: 400 }
+                            );
+                          } catch (_) {}
+                        }
+
                         scheduleSync();
                       } catch (_) {}
                     }, 100);
@@ -512,8 +622,25 @@ export default function MapPage() {
               </div>
 
               <div className="map-page__markers-layer">
+                {userLocationPoint && (
+                  <div
+                    className="map-page__user-location"
+                    style={{
+                      left: `${userLocationPoint.x}px`,
+                      top: `${userLocationPoint.y}px`,
+                    }}
+                    aria-label="Ваше местоположение"
+                    title="Ваше местоположение"
+                  >
+                    <span className="map-page__user-location-core" />
+                  </div>
+                )}
+
                 {locations.map((location) => {
-                  const point = markerPoints.find((item) => item.id === location.id);
+                  const point = markerPoints.find(
+                    (item) => item.id === location.id
+                  );
+
                   if (!point) return null;
 
                   return (
@@ -540,7 +667,7 @@ export default function MapPage() {
 
             {activePlace && placeCardStyle && (
               <div
-                className={`map-place-card-overlay map-place-card-overlay--${placeCardStyle.placement}`}
+                className="map-place-card-overlay"
                 style={{
                   left: `${placeCardStyle.left}px`,
                   top: `${placeCardStyle.top}px`,
@@ -553,18 +680,23 @@ export default function MapPage() {
                       src={activePlace.image}
                       alt={activePlace.title}
                     />
-                    {/* <div className="map-place-card__fav" aria-hidden="true">
+                    {/*
+                    <button className="map-place-card__fav" type="button">
                       ★
-                    </div> */}
+                    </button>
+                    */}
                   </div>
 
                   <div className="map-place-card__content">
-                    <div className="map-place-card__tags">{activePlace.tags}</div>
-                    <div className="map-place-card__title">{activePlace.title}</div>
+                    <div className="map-place-card__tags">
+                      {activePlace.tags}
+                    </div>
+                    <div className="map-place-card__title">
+                      {activePlace.title}
+                    </div>
                     <div className="map-place-card__description">
                       {activePlace.description}
                     </div>
-
                     <button
                       className="map-place-card__button"
                       type="button"
@@ -647,9 +779,9 @@ export default function MapPage() {
                   <option value="" disabled>
                     Выберите элемент
                   </option>
-                  <option>Барокко</option>
-                  <option>Классицизм</option>
-                  <option>Модерн</option>
+                  <option value="baroque">Барокко</option>
+                  <option value="classic">Классицизм</option>
+                  <option value="modern">Модерн</option>
                 </select>
               </div>
 
@@ -659,101 +791,37 @@ export default function MapPage() {
                   <option value="" disabled>
                     Выберите элемент
                   </option>
-                  <option>XVIII век</option>
-                  <option>XIX век</option>
-                  <option>XX век</option>
+                  <option value="18">XVIII век</option>
+                  <option value="19">XIX век</option>
+                  <option value="20">XX век</option>
                 </select>
               </div>
 
               <div className="map-page__filters-actions">
                 <button className="map-page__reset-button" type="button">
-                  <span>×</span>
-                  <span>Сбросить</span>
+                  × Сбросить
                 </button>
-
                 <button className="map-page__apply-button" type="button">
                   Применить
                 </button>
               </div>
             </div>
+
+            
+
+            <div
+              className={`map-page__map-dim ${
+                isFiltersOpen || detailPlace ? 'map-page__map-dim--visible' : ''
+              }`}
+              onClick={() => {
+                setIsFiltersOpen(false);
+                closePlaceCard();
+                closeDetailDrawer();
+              }}
+            />
           </div>
+          
         </main>
-
-        {detailPlace && (
-        <aside className="map-detail-drawer">
-          <button
-            className="map-detail-drawer__close"
-            type="button"
-            onClick={closeDetailDrawer}
-            aria-label="Закрыть подробную информацию"
-          >
-            ×
-          </button>
-
-          <div className="map-detail-drawer__body">
-            <h2 className="map-detail-drawer__title">{detailPlace.title}</h2>
-
-            <div className="map-detail-drawer__section">
-              <div className="map-detail-drawer__label">
-                {detailPlace.shortDescription}
-              </div>
-              <p className="map-detail-drawer__text">
-                {detailPlace.description}
-              </p>
-            </div>
-
-            <div className="map-detail-drawer__section">
-              <div className="map-detail-drawer__label">Галерея</div>
-
-              <div className="map-detail-drawer__gallery">
-                <img
-                  className="map-detail-drawer__gallery-image"
-                  src={detailPlace.image}
-                  alt={detailPlace.title}
-                />
-              </div>
-            </div>
-
-            <div className="map-detail-drawer__section">
-              <div className="map-detail-drawer__label">Адрес</div>
-              <div className="map-detail-drawer__value">
-                {detailPlace.address}
-              </div>
-            </div>
-
-            {/*
-            <div className="map-detail-drawer__section">
-              <div className="map-detail-drawer__label">Время работы</div>
-              <div className="map-detail-drawer__value">
-                {detailPlace.workHours.map((item) => (
-                  <div key={item}>{item}</div>
-                ))}
-              </div>
-            </div>
-            */}
-
-            <div className="map-detail-drawer__section">
-              <div className="map-detail-drawer__label">
-                {detailPlace.extraTitle}
-              </div>
-              <p className="map-detail-drawer__text">
-                {detailPlace.extraText}
-              </p>
-            </div>
-          </div>
-        </aside>
-      )}
-
-      <div
-        className={`map-page__map-dim ${
-          isFiltersOpen || detailPlace ? 'map-page__map-dim--visible' : ''
-        }`}
-        onClick={() => {
-          setIsFiltersOpen(false);
-          closePlaceCard();
-          closeDetailDrawer();
-        }}
-      />
 
         <div className="map-page__footer-wrap">
           <div className="map-page__inner">
@@ -761,6 +829,76 @@ export default function MapPage() {
           </div>
         </div>
       </div>
+      {detailPlace && (
+              <aside className="map-detail-drawer">
+                <button
+                  className="map-detail-drawer__close"
+                  type="button"
+                  onClick={closeDetailDrawer}
+                  aria-label="Закрыть подробную информацию"
+                >
+                  ×
+                </button>
+
+                <div className="map-detail-drawer__body">
+                  <h2 className="map-detail-drawer__title">
+                    {detailPlace.title}
+                  </h2>
+
+                  <div className="map-detail-drawer__section">
+                    <p className="map-detail-drawer__text">
+                      {detailPlace.shortDescription}
+                    </p>
+                  </div>
+
+                  <div className="map-detail-drawer__section">
+                    <p className="map-detail-drawer__text">
+                      {detailPlace.description}
+                    </p>
+                  </div>
+
+                  <div className="map-detail-drawer__section">
+                    <div className="map-detail-drawer__label">Галерея</div>
+                    <div className="map-detail-drawer__gallery">
+                      <img
+                        className="map-detail-drawer__gallery-image"
+                        src={detailPlace.image}
+                        alt={detailPlace.title}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="map-detail-drawer__section">
+                    <div className="map-detail-drawer__label">Адрес</div>
+                    <div className="map-detail-drawer__value">
+                      {detailPlace.address}
+                    </div>
+                  </div>
+
+                  {/*
+                  <div className="map-detail-drawer__section">
+                    <div className="map-detail-drawer__label">Время работы</div>
+                    <div className="map-detail-drawer__value">
+                      {detailPlace.workHours.map((item) => (
+                        <div key={item}>{item}</div>
+                      ))}
+                    </div>
+                  </div>
+                  */}
+
+                  <div className="map-detail-drawer__section">
+                    <div className="map-detail-drawer__label">
+                      {detailPlace.extraTitle}
+                    </div>
+                    <p className="map-detail-drawer__text">
+                      {detailPlace.extraText}
+                    </p>
+                  </div>
+                </div>
+              </aside>
+            )}
     </YMaps>
+    
+    
   );
 }

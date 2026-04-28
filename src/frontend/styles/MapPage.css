@@ -92,6 +92,7 @@
   padding: 0;
   cursor: pointer;
   pointer-events: auto;
+  z-index: 2;
 }
 
 .map-page__marker img {
@@ -100,6 +101,53 @@
   display: block;
   user-select: none;
   pointer-events: none;
+}
+
+.map-page__user-location {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(47, 128, 237, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.map-page__user-location::before {
+  content: '';
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(47, 128, 237, 0.16);
+  animation: map-user-location-pulse 1.8s ease-out infinite;
+}
+
+.map-page__user-location-core {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #2f80ed;
+  border: 3px solid #ffffff;
+  box-shadow: 0 3px 12px rgba(47, 128, 237, 0.35);
+}
+
+@keyframes map-user-location-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
 }
 
 .map-page__map-dim {
@@ -143,7 +191,6 @@
     transform 0.22s ease,
     box-shadow 0.22s ease,
     background-color 0.22s ease;
-
 }
 
 .map-page__filter-button:hover {
@@ -504,12 +551,12 @@
   object-fit: cover;
 }
 
-
 @keyframes mapPlaceCardFadeIn {
   from {
     opacity: 0;
     transform: translateY(10px) scale(0.97);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -521,6 +568,7 @@
     opacity: 0;
     transform: translateX(-12px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
