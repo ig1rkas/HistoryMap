@@ -15,7 +15,33 @@
         "response_schema": {
             "type": "object",
             "properties": {
-                "reviews": { "type": "array", "items": { "type": "object" } },
+                "reviews": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "_id": { "type": "string" },
+                            "place_id": { "type": "string" },
+                            "author_id": { "type": "string" },
+                            "rating": { "type": "integer" },
+                            "text": { "type": "string", "nullable": true },
+                            "moderation_status": { "type": "string" },
+                            "created_at": { "type": "string" },
+                            "updated_at": { "type": "string" },
+                            "author": {
+                                "type": "object",
+                                "nullable": true,
+                                "properties": {
+                                    "_id": { "type": "string" },
+                                    "vk_id": { "type": "number" },
+                                    "first_name": { "type": "string", "nullable": true },
+                                    "last_name": { "type": "string", "nullable": true },
+                                    "avatar": { "type": "string", "nullable": true }
+                                }
+                            }
+                        }
+                    }
+                },
                 "total": { "type": "integer" },
                 "limit": { "type": "integer" },
                 "offset": { "type": "integer" }
