@@ -236,6 +236,12 @@ button {
   transform: translateY(0);
 }
 
+.login-button:disabled {
+  cursor: default;
+  opacity: 0.64;
+  transform: none;
+}
+
 .login-button:focus-visible {
   outline: none;
   box-shadow:
@@ -257,13 +263,28 @@ button {
   color: #444;
 }
 
+.header:not(.header--map) .header__user-name {
+  color: #fff;
+}
+
 .header__avatar {
   width: 48px;
   height: 48px;
   border-radius: 16px;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.9);
+  flex: 0 0 auto;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+
+.header__avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff4c72;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 /* SHARED FOOTER */
