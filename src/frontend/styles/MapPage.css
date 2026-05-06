@@ -92,6 +92,7 @@
   padding: 0;
   cursor: pointer;
   pointer-events: auto;
+  z-index: 2;
 }
 
 .map-page__marker img {
@@ -100,6 +101,53 @@
   display: block;
   user-select: none;
   pointer-events: none;
+}
+
+.map-page__user-location {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(47, 128, 237, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.map-page__user-location::before {
+  content: '';
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(47, 128, 237, 0.16);
+  animation: map-user-location-pulse 1.8s ease-out infinite;
+}
+
+.map-page__user-location-core {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #2f80ed;
+  border: 3px solid #ffffff;
+  box-shadow: 0 3px 12px rgba(47, 128, 237, 0.35);
+}
+
+@keyframes map-user-location-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
 }
 
 .map-page__map-dim {
@@ -143,7 +191,6 @@
     transform 0.22s ease,
     box-shadow 0.22s ease,
     background-color 0.22s ease;
-
 }
 
 .map-page__filter-button:hover {
@@ -160,6 +207,21 @@
   width: 15px;
   height: 15px;
   object-fit: contain;
+}
+
+.map-page__status {
+  position: absolute;
+  top: 14px;
+  left: 160px;
+  z-index: 24;
+  min-height: 42px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #5d5a61;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
 }
 
 .map-page__filters-panel {
@@ -429,6 +491,7 @@
   inset: 0 auto 0 0;
   z-index: 26;
   width: 332px;
+  max-width: 100vw;
   background: #ffffff;
   border-radius: 0 18px 18px 0;
   box-shadow: 16px 0 40px rgba(0, 0, 0, 0.16);
@@ -455,6 +518,7 @@
 .map-detail-drawer__body {
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 18px 22px 28px;
 }
 
@@ -464,6 +528,30 @@
   font-weight: 800;
   line-height: 1.2;
   color: #1d1a20;
+}
+
+.map-detail-drawer__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -8px 0 14px;
+  color: #7a747d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.map-detail-drawer__notice {
+  margin-bottom: 12px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #f5f4f5;
+  color: #6b6570;
+  font-size: 12px;
+}
+
+.map-detail-drawer__notice--error {
+  background: #fff0f3;
+  color: #d72d55;
 }
 
 .map-detail-drawer__section + .map-detail-drawer__section {
@@ -492,24 +580,473 @@
 
 .map-detail-drawer__gallery {
   position: relative;
-  border-radius: 14px;
-  overflow: hidden;
   margin-top: 4px;
+  display: grid;
+  gap: 8px;
 }
 
 .map-detail-drawer__gallery-image {
   display: block;
   width: 100%;
   height: 166px;
+  border-radius: 14px;
   object-fit: cover;
 }
 
+.map-detail-drawer__reviews {
+  padding-top: 4px;
+  padding-bottom: 62px;
+}
+
+.map-detail-drawer__empty {
+  padding: 8px 0 4px;
+  color: #88828b;
+  font-size: 12px;
+}
+
+.map-detail-drawer__reviews-list {
+  display: grid;
+  gap: 14px;
+}
+
+.map-reviews__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: 14px;
+}
+
+.map-reviews__title {
+  min-width: 0;
+  margin: 0;
+  color: #8b93a3;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-reviews__average {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  color: #8b93a3;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.map-reviews__average-star {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+}
+
+.map-reviews__message {
+  margin-top: 10px;
+  color: #6b6570;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.map-reviews__write-button {
+  position: sticky;
+  bottom: 10px;
+  z-index: 2;
+  margin: 14px 0 0 auto;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff2f59 0%, #ff587f 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 10px 18px rgba(255, 74, 116, 0.24);
+  cursor: pointer;
+}
+
+.map-reviews__write-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+
+.map-review {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  padding: 0;
+}
+
+.map-review__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  background: #e9e4ea;
+}
+
+.map-review__avatar--fallback {
+  background: linear-gradient(135deg, #8368ff 0%, #18c7b8 100%);
+}
+
+.map-review__content {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.map-review__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 8px;
+  min-width: 0;
+}
+
+.map-review__author {
+  min-width: 0;
+  color: #111016;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.18;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-review__rating {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.map-review__star {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+}
+
+.map-review__text {
+  margin: 2px 0 0;
+  color: #111016;
+  font-size: 14px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.map-review-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 40;
+  width: min(424px, calc(100vw - 32px));
+  min-height: 220px;
+  padding: 16px 20px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 14px 16px 38px rgba(0, 0, 0, 0.15);
+  animation: mapReviewDialogFadeIn 0.18s ease;
+  transform: translate(-50%, -50%);
+}
+
+.map-review-dialog__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 10px;
+  background: #f6f5f7;
+  color: #1d1a20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.map-review-dialog__form {
+  margin: 0;
+  gap: 10px;
+}
+
+.map-review-dialog__heading {
+  text-align: center;
+}
+
+.map-review-dialog__title {
+  margin: 0;
+  color: #111016;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.map-review-dialog__subtitle {
+  width: min(300px, 100%);
+  margin: 4px auto 0;
+  color: #57525a;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.map-review-dialog__rating {
+  justify-content: center;
+  gap: 2px;
+}
+
+.map-review-dialog__rating .map-review-form__star {
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border-radius: 6px;
+}
+
+.map-review-dialog__textarea-wrap {
+  position: relative;
+  display: block;
+}
+
+.map-review-dialog__textarea-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.map-review-dialog__textarea {
+  min-height: 44px;
+  resize: none;
+  border-radius: 12px;
+  padding: 12px 46px 10px 12px;
+  background: #f8f8f9;
+  border-color: #eeedf1;
+  color: #57525a;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.map-review-dialog__textarea::placeholder {
+  color: #5e5962;
+}
+
+.map-review-dialog__chat-icon {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  transform: translateY(-50%);
+  border-radius: 9px;
+  background: #ebebee;
+  fill: #6f6a72;
+  pointer-events: none;
+}
+
+.map-review-dialog__submit {
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.map-review-dialog__submit-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+
+.map-review-form {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.map-review-form__rating {
+  display: flex;
+  gap: 4px;
+}
+
+.map-review-form__star {
+  width: 22px;
+  height: 22px;
+  padding: 2px;
+  border-radius: 8px;
+  color: #f2b313;
+  background: transparent;
+  line-height: 1;
+  transition:
+    transform 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.map-review-form__star:hover {
+  transform: translateY(-1px);
+}
+
+.map-review-form__star:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(242, 179, 19, 0.2);
+}
+
+.map-star {
+  display: block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+}
+
+.map-star__shape {
+  fill: #ffffff;
+  stroke: #f2b313;
+  stroke-width: 3.2;
+  stroke-linejoin: round;
+  transition:
+    fill 0.16s ease,
+    stroke 0.16s ease;
+}
+
+.map-star--filled .map-star__shape {
+  fill: #f2b313;
+}
+
+.map-star.map-reviews__average-star {
+  width: 10px;
+  height: 10px;
+}
+
+.map-star.map-review__star {
+  width: 10px;
+  height: 10px;
+}
+
+.map-review-form__star .map-star {
+  width: 100%;
+  height: 100%;
+}
+
+.map-review-form__textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 82px;
+  border: 1px solid #ece8eb;
+  border-radius: 12px;
+  background: #f8f7f8;
+  padding: 10px;
+  color: #2f2a31;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.map-review-form__textarea::placeholder {
+  color: #a5a0a8;
+}
+
+.map-review-form__message {
+  color: #6b6570;
+  font-size: 12px;
+}
+
+.map-review-form__submit {
+  height: 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #ff2f59 0%, #ff587f 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 10px 18px rgba(255, 74, 116, 0.2);
+}
+
+.map-review-form__submit:disabled {
+  cursor: default;
+  opacity: 0.68;
+}
+
+.map-review-form.map-review-dialog__form {
+  margin: 0;
+  gap: 10px;
+}
+
+.map-review-dialog .map-review-dialog__textarea {
+  min-height: 44px;
+  resize: none;
+  padding: 12px 46px 10px 12px;
+  background: #f8f8f9;
+  border-color: #eeedf1;
+  color: #57525a;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.map-review-dialog .map-review-dialog__textarea::placeholder {
+  color: #5e5962;
+}
+
+.map-review-dialog .map-review-dialog__submit {
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.map-review-dialog .map-review-form__message {
+  margin: -2px 0 0;
+  color: #d72d55;
+  text-align: center;
+}
+
+@keyframes mapReviewDialogFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 8px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
 
 @keyframes mapPlaceCardFadeIn {
   from {
     opacity: 0;
     transform: translateY(10px) scale(0.97);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -521,6 +1058,7 @@
     opacity: 0;
     transform: translateX(-12px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -541,6 +1079,12 @@
 }
 
 @media (max-width: 900px) {
+  .map-page__status {
+    top: 64px;
+    left: 26px;
+    max-width: calc(100vw - 52px);
+  }
+
   .map-page__filters-panel {
     width: min(300px, calc(100vw - 52px));
   }
