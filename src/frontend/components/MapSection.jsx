@@ -1,55 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Map, Placemark } from '@pbe/react-yandex-maps';
-
-const locations = [
-  {
-    id: 1,
-    title: 'Исаакиевский собор',
-    description: 'Историческое место в центре Санкт-Петербурга',
-    coords: [59.9343, 30.3061],
-  },
-  {
-    id: 2,
-    title: 'Дворцовая площадь',
-    description: 'Одна из главных площадей города',
-    coords: [59.9398, 30.3146],
-  },
-  {
-    id: 3,
-    title: 'Русский музей',
-    description: 'Крупнейшее собрание русского искусства',
-    coords: [59.9387, 30.3328],
-  },
-  {
-    id: 4,
-    title: 'Сенная площадь',
-    description: 'Оживленная историческая локация',
-    coords: [59.9275, 30.3179],
-  },
-  {
-    id: 5,
-    title: 'Мариинский театр',
-    description: 'Культовое место театрального Петербурга',
-    coords: [59.9256, 30.2968],
-  },
-  {
-    id: 6,
-    title: 'Владимирская',
-    description: 'Исторический район и транспортный узел',
-    coords: [59.9279, 30.3479],
-  },
-  {
-    id: 7,
-    title: 'Площадь Восстания',
-    description: 'Один из центральных городских узлов',
-    coords: [59.931, 30.3609],
-  },
-  {
-    id: 8,
-    title: 'Лиговский проспект',
-    description: 'Городская артерия с исторической застройкой',
-    coords: [59.9188, 30.3517],
-  },
-];
+import { getPlacePoints } from '../api/client';
 
 const pinIcon = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
 <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -59,7 +10,42 @@ const pinIcon = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
 </svg>
 `)}`;
 
+function pointToMapLocation(point) {
+  if (!Array.isArray(point.coordinates) || point.coordinates.length !== 2) {
+    return null;
+  }
+
+  return {
+    id: point._id,
+    title: point.title,
+    description: point.short_description,
+    coords: [point.coordinates[1], point.coordinates[0]],
+  };
+}
+
 export default function MapSection() {
+  const [mapLocations, setMapLocations] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getPlacePoints()
+      .then((data) => {
+        if (cancelled) return;
+
+        setMapLocations(
+          (data.points || []).map(pointToMapLocation).filter(Boolean)
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setMapLocations([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="hero__map-section">
       <div className="map-shell">
@@ -84,7 +70,7 @@ export default function MapSection() {
             }
           }}
         >
-          {locations.map((location) => (
+          {mapLocations.map((location) => (
             <Placemark
               key={location.id}
               geometry={location.coords}

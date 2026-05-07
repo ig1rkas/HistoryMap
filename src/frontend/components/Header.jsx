@@ -1,17 +1,30 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import logo from '../assets/images/logo.png';
 import noteIcon from '../assets/images/note.png';
 import headphonesIcon from '../assets/images/headphones.png';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+function getInitials(name) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
 
 export default function Header({
   variant = 'landing',
   user = null,
   showLogin = true,
 }) {
+  const { user: authUser, isLoading, loginWithVk } = useAuth();
+  const currentUser = user || authUser;
+  const userInitials = currentUser?.name ? getInitials(currentUser.name) : 'VK';
+
   const handleVkLogin = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/vk`;
+    loginWithVk();
   };
 
   return (
@@ -45,17 +58,28 @@ export default function Header({
         </button>
       </div>
 
-      {user ? (
+      {currentUser ? (
         <div className="header__user">
-          <span className="header__user-name">{user.name}</span>
-          <img
-            className="header__avatar"
-            src={user.avatar}
-            alt={user.name}
-          />
+          <span className="header__user-name">{currentUser.name}</span>
+          {currentUser.avatar ? (
+            <img
+              className="header__avatar"
+              src={currentUser.avatar}
+              alt={currentUser.name}
+            />
+          ) : (
+            <span className="header__avatar header__avatar--fallback">
+              {userInitials}
+            </span>
+          )}
         </div>
       ) : showLogin ? (
-        <button className="login-button" type="button" onClick={handleVkLogin}>
+        <button
+          className="login-button"
+          type="button"
+          onClick={handleVkLogin}
+          disabled={isLoading}
+        >
           Войти с помощью VK <span aria-hidden="true">→</span>
         </button>
       ) : (
