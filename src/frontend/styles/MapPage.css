@@ -595,7 +595,7 @@
 
 .map-detail-drawer__reviews {
   padding-top: 4px;
-  padding-bottom: 62px;
+  /* padding-bottom: 62px; */
 }
 
 .map-detail-drawer__empty {

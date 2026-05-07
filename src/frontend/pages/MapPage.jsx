@@ -956,10 +956,10 @@ export default function MapPage() {
                       className="map-place-card__image"
                       src={activePlace.image || fallbackPlaceImage}
                       alt={activePlace.title}
-                      onError={(event) => {
-                        event.currentTarget.onerror = null;
-                        event.currentTarget.src = fallbackPlaceImage;
-                      }}
+                      // onError={(event) => {
+                      //   event.currentTarget.onerror = null;
+                      //   event.currentTarget.src = fallbackPlaceImage;
+                      // }}
                     />
                     {/*
                     <button className="map-place-card__fav" type="button">

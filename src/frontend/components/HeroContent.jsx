@@ -22,7 +22,7 @@ export default function HeroContent() {
     };
   }, []);
 
-  const countText = placesCount ?? 69;
+  const countText = placesCount ?? 0;
 
   return (
     <section className="hero__content">
