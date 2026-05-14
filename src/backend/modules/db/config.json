@@ -1,4 +1,4 @@
 {
-    "url": "mongodb://localhost:27017/history_map",
+    "url": "mongodb://localhost:9010/history_map",
     "directory": "./models"
 }
