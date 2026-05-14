@@ -7,6 +7,7 @@
 ## Полезные ссылки
 * Дашборд проекта: https://github.com/users/stanevko-ilya/projects/4
 * Дизайн в Figma: https://www.figma.com/design/RJeuXs7pYUfLApqXnjhpXM/HistoryMap?node-id=0-1&t=Ji8BnYOcBwPg8lcx-1
+* Доступ к продукту (только когда запущен): https://homepc.domainapi.ru
 
 ## Установка
 
