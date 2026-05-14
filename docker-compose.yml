@@ -1,0 +1,55 @@
+services:
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    volumes:
+      - frontend-dist:/dist
+    restart: "no"
+
+  api:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./src/backend/.env
+      - ./src/backend/.env.docker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      frontend:
+        condition: service_completed_successfully
+    networks:
+      - app-net
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - frontend-dist:/var/www/html:ro
+    depends_on:
+      - api
+    networks:
+      - app-net
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $!; done'"
+
+volumes:
+  frontend-dist:
+
+networks:
+  app-net:
+    driver: bridge
